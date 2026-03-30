@@ -1,316 +1,237 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Content Moderation Lab · Digilabour</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<style>
-:root{
-  --bg:#fdfdfd;--surface:#fff;--border:#e0e0e0;--text:#1a1a1a;--muted:#666;--accent:#000;
-  --t-w:#854f0b;--t-g:#1a3a5c;--t-a:#0a6b50;--t-s:#8c2e10;--t-j:#534ab7;
-  --panel:520px;--nav:64px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text);background:var(--bg);overflow:hidden}
-.serif{font-family:Georgia,serif;line-height:1.7}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research OS · Content Moderation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        :root {
+            --p: #6366f1; --s: #14b8a6; --bg: #f8fafc; --glass: rgba(255, 255, 255, 0.9);
+            --txt: #1e293b; --bdr: #e2e8f0; --accent: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', system-ui, sans-serif; color: var(--txt); background: var(--bg); height: 100vh; overflow: hidden; }
+        .serif { font-family: Georgia, serif; }
 
-/* ── TOP NAV ── */
-#topnav{height:var(--nav);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 32px;gap:24px;background:#fff;z-index:1000;position:relative}
-.brand{font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:2px}
-.brand span { font-weight: 300; color: var(--muted); }
-.nav-tabs{display:flex;gap:30px;margin-left:20px}
-.nav-tab{font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;text-transform:uppercase;border-bottom:2px solid transparent;padding:22px 0;transition: 0.2s;}
-.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+        /* --- HEADER --- */
+        header { 
+            height: 60px; background: #fff; border-bottom: 1px solid var(--bdr); 
+            display: flex; align-items: center; padding: 0 25px; justify-content: space-between;
+            z-index: 1000; position: relative;
+        }
+        .logo { font-weight: 900; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
 
-/* ── CONSTELAÇÃO / COMPARADOR ── */
-#comparison-panel{
-    position:fixed;bottom:24px;left:24px;z-index:1500;background:#fff;border:1px solid #000;
-    width:700px;max-height:85vh;display:none;flex-direction:column;box-shadow:20px 20px 0px rgba(0,0,0,0.05);
-}
-.comp-header{padding:15px;background:#000;color:#fff;display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800;text-transform:uppercase;}
-.comp-body{padding:30px;overflow-y:auto;}
-.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+        /* --- MAIN LAYOUT --- */
+        main { display: flex; height: calc(100vh - 60px); position: relative; }
+        #map { flex: 1; z-index: 1; }
 
-/* ── MAP & LIST ── */
-.page{display:none;height:calc(100vh - var(--nav))}
-.page.active{display:flex}
-#map{flex:1;filter:grayscale(1) contrast(1.1)}
-.sidebar-list{width:340px;border-right:1px solid var(--border);overflow-y:auto;background:#fff}
-.list-item{padding:18px 24px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:15px;transition:0.2s}
-.list-item:hover{background:#f9f9f9}
-.list-item.active{background:var(--bg);border-right:5px solid #000}
+        /* --- DASHBOARD OVERLAY (SPOTLIGHT) --- */
+        #dashboard-overlay {
+            position: absolute; top: 20px; right: 20px; bottom: 20px; width: 550px;
+            background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px;
+            border: 1px solid #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            z-index: 500; display: none; flex-direction: column; overflow: hidden;
+            border-left: 4px solid var(--p);
+        }
 
-/* ── AVATARS ── */
-.avatar{width:40px;height:40px;border-radius:50%;background:#eee;object-fit:cover;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;overflow:hidden}
-.avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .dash-header { padding: 30px; background: #fff; border-bottom: 1px solid var(--bdr); }
+        .dash-body { padding: 30px; overflow-y: auto; flex: 1; }
+        
+        /* --- WORKFLOW TABS --- */
+        .wf-nav { display: flex; background: #f1f5f9; padding: 5px; border-radius: 10px; margin-bottom: 20px; }
+        .wf-tab { flex: 1; padding: 8px; border: none; border-radius: 6px; font-size: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; background: transparent; color: #64748b; }
+        .wf-tab.active { background: #fff; color: var(--p); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-/* ── EDITORIAL SIDE PANEL ── */
-#side-panel{
-    width:var(--panel);height:100%;background:#fff;border-left:1px solid var(--border);
-    position:absolute;right:0;top:0;z-index:800;transform:translateX(100%);transition:0.5s cubic-bezier(0.19, 1, 0.22, 1);
-    display:flex;flex-direction:column;
-}
-#side-panel.open{transform:translateX(0)}
+        /* --- COMPONENTS --- */
+        .constellation-tag { display: inline-block; padding: 4px 10px; border-radius: 20px; background: #eef2ff; color: var(--p); font-size: 10px; font-weight: 700; margin: 0 5px 5px 0; }
+        .instrument-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid var(--bdr); margin-bottom: 10px; }
+        .editor-textarea { width: 100%; min-height: 200px; padding: 15px; border: 1px solid var(--bdr); border-radius: 10px; font-family: Georgia, serif; line-height: 1.6; outline: none; }
+        
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 800; font-size: 10px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-p { background: var(--p); color: #fff; }
+        .btn-s { background: var(--s); color: #fff; }
 
-/* ── FORMS (ORCID METADATA) ── */
-.edit-area{flex:1;padding:50px;overflow-y:auto;background:#fcfcfc}
-.orcid-section{background:#fff;padding:25px;border:1px solid var(--border);margin-bottom:30px}
-.section-title{font-size:10px;font-weight:900;text-transform:uppercase;margin-bottom:20px;color:#000;border-bottom:2px solid #000;padding-bottom:5px;display:inline-block}
-.field-group{margin-bottom:20px}
-label{display:block;font-size:9px;font-weight:800;text-transform:uppercase;margin-bottom:8px;color:#999}
-input, textarea, select{width:100%;padding:12px;border:1px solid #ddd;font-size:13px;border-radius:0;outline:none}
-input:focus, textarea:focus { border-color: #000; }
-
-.btn{padding:12px 20px;font-size:10px;font-weight:800;text-transform:uppercase;cursor:pointer;border:1px solid #000;border-radius:0;transition:0.2s}
-.btn-black{background:#000;color:#fff}
-.btn-black:hover{background:#333}
-.btn-red{border-color:#ff4444;color:#ff4444}
-.btn-red:hover{background:#ff4444;color:#fff}
-
-.custom-pin{background:#000;border:2px solid #fff;border-radius:50%;box-shadow:0 0 10px rgba(0,0,0,0.3)}
-</style>
+        /* --- ANIMATIONS --- */
+        .slide-in { animation: slideIn 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    </style>
 </head>
 <body>
 
-<div id="topnav">
-  <div class="brand">Digilabour <span>· Content Moderation</span></div>
-  <div class="nav-tabs">
-    <div class="nav-tab active" onclick="switchPage('map',this)">Mapa & Constelação</div>
-    <div class="nav-tab" onclick="switchPage('list',this)">Gestão ORCID</div>
-  </div>
-  <div style="margin-left:auto; display:flex; gap:12px">
-      <button class="btn" onclick="addNewResearcher()">+ Adicionar Pesquisador</button>
-      <button class="btn btn-black" onclick="saveAll()">Salvar Alterações</button>
-  </div>
-</div>
+<header>
+    <div class="logo">Research OS <span>// Digilabour</span></div>
+    <div style="display:flex; gap:15px">
+        <button class="btn btn-p" onclick="exportGlobal()">Exportar Backup Global</button>
+    </div>
+</header>
 
-<div class="page active" id="page-map">
-  <div id="map"></div>
-  <div id="comparison-panel">
-      <div class="comp-header">
-          <span>Análise de Constelação · luquizis</span>
-          <span style="cursor:pointer; font-size:16px" onclick="closeComparison()">×</span>
-      </div>
-      <div class="comp-body" id="comp-body"></div>
-  </div>
-  <div id="side-panel">
-      <div style="padding:50px" id="panel-content"></div>
-  </div>
-</div>
+<main>
+    <div id="map"></div>
 
-<div class="page" id="page-list">
-  <div class="sidebar-list" id="res-list"></div>
-  <div class="edit-area" id="res-editor">
-      <div class="serif" style="text-align:center; padding-top:120px; color:#ddd; font-size:20px">Selecione um pesquisador para visualizar metadados ORCID</div>
-  </div>
-</div>
+    <div id="dashboard-overlay" class="slide-in">
+        <div class="dash-header">
+            <span style="float:right; cursor:pointer; font-size:20px" onclick="closeDash()">×</span>
+            <div id="res-identity"></div>
+        </div>
+        
+        <div class="dash-body">
+            <div class="wf-nav">
+                <button class="wf-tab active" onclick="switchWF('insight', this)">Insight</button>
+                <button class="wf-tab" onclick="switchWF('instrument', this)">Instrumento</button>
+                <button class="wf-tab" onclick="switchWF('analysis', this)">Análise & Blog</button>
+            </div>
+
+            <div id="view-insight" class="wf-view">
+                <h4 class="uppercase" style="font-size:10px; margin-bottom:15px">Constelação Teórica</h4>
+                <div id="constellation-map" style="margin-bottom:20px"></div>
+                <div id="metadata-box" class="instrument-box"></div>
+            </div>
+
+            <div id="view-instrument" class="wf-view" style="display:none">
+                <h4 style="margin-bottom:10px">Roteiro de Entrevista Personalizado</h4>
+                <div id="q-list"></div>
+                <button class="btn btn-p" onclick="addQuestion()" style="width:100%">+ Adicionar Pergunta</button>
+            </div>
+
+            <div id="view-analysis" class="wf-view" style="display:none">
+                <h4 style="margin-bottom:10px">Laboratório de Análise de Dados</h4>
+                <label>Transcrição Bruta / Diarização</label>
+                <textarea class="editor-textarea" id="raw-transcript" placeholder="Cole aqui a transcrição do Sonix/Otter..."></textarea>
+                <button class="btn btn-s" onclick="generateBlogText()" style="margin-top:15px; width:100%">Gerar Texto para o Blog</button>
+                <div id="blog-output" class="serif" style="margin-top:20px; padding:15px; background:#fff; border-radius:10px; border:1px dashed var(--s); display:none"></div>
+            </div>
+        </div>
+    </div>
+</main>
 
 <script>
-// --- DATA CONFIG ---
-const TAG_LABELS={w:'Trabalho',g:'Governança',a:'Algoritmos',s:'Sul Global',j:'Jornalismo'};
-let DATA = { researchers: [] };
-let selectedForComparison = new Set();
-let map, markers = {};
+// --- BANCO DE DADOS ---
+let DATA = {
+    researchers: [
+        { id: '1', name: 'Sarah T. Roberts', org: 'UCLA', bio: 'Pioneira no conceito de CCM.', tags: ['trabalho', 'trauma', 'visibilidade'], orcid: '0000-0003-2415-397X', lat: 34.05, lng: -118.24, questions: [], analysis: '' },
+        { id: '2', name: 'Rafael Zanatta', org: 'Data Privacy Brasil', bio: 'Regulação e direitos coletivos.', tags: ['lei', 'fake-news', 'lobbying'], orcid: '0000-0002-3682-1549', lat: -23.56, lng: -46.64, questions: [], analysis: '' },
+        { id: '3', name: 'Aapti Institute', org: 'Índia', bio: 'Labor e fragmentação transnacional.', tags: ['india', 'bpo', 'responsabilidade'], orcid: 'India-Global-South', lat: 12.97, lng: 77.59, questions: [], analysis: '' }
+    ]
+};
 
-// --- INITIAL DATA ---
-function loadData(){
-    const s = localStorage.getItem('digilabour_orcid_v2');
-    if(s) DATA = JSON.parse(s);
-    else DATA.researchers = [
-        {id:'1', name:'Sarah T. Roberts', photo:'https://digilabour.com.br/wp-content/uploads/2019/09/sarah-t-roberts-1.jpg', orcid:'0000-0003-2415-397X', org:'UCLA', lat:34.05, lng:-118.24, bio:'Criadora do conceito de commercial content moderation (CCM). Aborda a moderação como labor invisível e traumático.', employment:'Associate Professor at UCLA', education:'PhD at University of Illinois', tags:['w','s']},
-        {id:'2', name:'Rafael Zanatta', photo:'https://digilabour.com.br/wp-content/uploads/2021/04/rafael-zanatta.jpg', orcid:'0000-0002-3682-1549', org:'Data Privacy Brasil', lat:-23.56, lng:-46.64, bio:'Defende que a moderação não cabe apenas às empresas ou ao Estado, mas deve envolver comunidades e cidadãos (direitos coletivos).', employment:'Diretor na Data Privacy Brasil', education:'Pós-doutorado na USP', tags:['g','s']},
-        {id:'3', name:'Ritvik Gupta / Aapti', photo:'', orcid:'Aapti-Institute-India', org:'Aapti Institute', lat:12.97, lng:77.59, bio:'Analisa como arranjos corporativos na Índia fragmentam a responsabilidade sobre moderadores contratados por plataformas globais.', employment:'Researcher at Aapti Institute', education:'Policy Research in Bengaluru', tags:['w','g','s']},
-        {id:'4', name:'Derechos Digitales', photo:'', orcid:'Derechos-Digitales-LatAm', org:'ONG Regional (Chile)', lat:-33.47, lng:-70.65, bio:'Referência na América Latina para liberdade de expressão e impacto regulatório em contextos regionais.', employment:'Fundada em 2005 (María Paz Canales et al.)', education:'Impacto em Venezuela, Colômbia e México', tags:['g','s','a']}
-    ];
+let map, markers = {}, activeId = null;
+
+// --- INITIALIZATION ---
+function init() {
+    loadStorage();
+    initMap();
 }
 
-function saveAll(){
-    localStorage.setItem('digilabour_orcid_v2', JSON.stringify(DATA));
-    renderMapMarkers();
-    renderResearcherList();
+function loadStorage() {
+    const saved = localStorage.getItem('research_os_db');
+    if(saved) DATA = JSON.parse(saved);
 }
 
-// --- CORE FUNCTIONS ---
-function addNewResearcher(){
-    const id = Date.now().toString();
-    DATA.researchers.push({ id, name: 'Novo Registro', photo:'', orcid:'', org:'', lat:0, lng:0, bio:'', employment:'', education:'', tags:[] });
-    switchPage('list', document.querySelectorAll('.nav-tab')[1]);
-    renderResearcherList();
-    editResearcher(id);
-}
-
-function deleteResearcher(id){
-    if(confirm("Remover permanentemente este pesquisador?")){
-        DATA.researchers = DATA.researchers.filter(r => r.id !== id);
-        saveAll();
-        document.getElementById('res-editor').innerHTML = '';
-    }
-}
-
-// --- MAP & CONSTELLATION ---
-function initMap(){
-    map = L.map('map', {center:[15, -20], zoom:3, zoomControl:false});
+function initMap() {
+    map = L.map('map', { center: [10, 0], zoom: 2, zoomControl: false });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-    renderMapMarkers();
+    renderMarkers();
 }
 
-function renderMapMarkers(){
-    Object.values(markers).forEach(m => map.removeLayer(m));
+function renderMarkers() {
     DATA.researchers.forEach(r => {
-        const icon = L.divIcon({
-            className: 'custom-pin',
-            html: `<div class="avatar" style="width:30px; height:30px">${r.photo ? `<img src="${r.photo}">` : r.name[0]}</div>`,
-            iconSize: [34, 34]
-        });
-        const m = L.marker([r.lat, r.lng], {icon}).addTo(map)
-            .on('click', (e) => {
-                if(e.originalEvent.shiftKey) toggleComparison(r.id);
-                else openProfile(r.id);
-            });
+        const m = L.circleMarker([r.lat, r.lng], { radius: 8, fillColor: '#6366f1', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
+        m.on('click', () => openDashboard(r.id));
         markers[r.id] = m;
     });
 }
 
-function toggleComparison(id){
-    if(selectedForComparison.has(id)) selectedForComparison.delete(id);
-    else selectedForComparison.add(id);
-    if(selectedForComparison.size >= 2) renderConstellation();
-    else document.getElementById('comparison-panel').style.display = 'none';
-}
-
-function renderConstellation(){
-    const panel = document.getElementById('comparison-panel');
-    const body = document.getElementById('comp-body');
-    panel.style.display = 'flex';
-    const items = Array.from(selectedForComparison).map(id => DATA.researchers.find(r => r.id === id));
+// --- DASHBOARD LOGIC ---
+function openDashboard(id) {
+    activeId = id;
+    const r = DATA.researchers.find(x => x.id === id);
+    const overlay = document.getElementById('dashboard-overlay');
     
-    // Análise de Proximidade (Tags em comum)
-    const common = items[0].tags.filter(t => items.every(it => it.tags.includes(t)));
-    
-    let html = `
-        <div style="margin-bottom:35px; padding-bottom:15px; border-bottom:1px solid #eee">
-            <span class="section-title">Pontos de Interseção Teórica</span><br>
-            <div style="margin-top:10px">${common.length ? common.map(t => `<span style="background:#000; color:#fff; padding:4px 8px; font-size:10px; margin-right:5px; font-weight:800; text-transform:uppercase">${TAG_LABELS[t]}</span>`).join('') : '<span style="color:#999">Divergência de eixos temáticos principais.</span>'}</div>
-        </div>
-        <div class="comp-grid">
+    // Identidade
+    document.getElementById('res-identity').innerHTML = `
+        <p style="font-size:10px; color:var(--p); font-weight:800; text-transform:uppercase">${r.org}</p>
+        <h2 class="serif" style="font-size:24px">${r.name}</h2>
     `;
-    
-    items.forEach(it => {
-        html += `
-            <div style="border-left:3px solid #000; padding-left:20px">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px">
-                    <div class="avatar">${it.photo ? `<img src="${it.photo}">` : it.name[0]}</div>
-                    <div>
-                        <div style="font-size:10px; font-weight:800; color:#999; text-transform:uppercase">${it.org}</div>
-                        <div style="font-weight:900; font-size:16px">${it.name}</div>
-                    </div>
-                </div>
-                <div class="serif" style="font-size:13px; color:#444"><strong>Abordagem:</strong> ${it.bio}</div>
-                <div style="margin-top:15px; font-size:11px; color:#888"><strong>Metadados ORCID:</strong> ${it.orcid}</div>
-            </div>
-        `;
-    });
-    
-    html += `</div>`;
-    body.innerHTML = html;
+
+    // Constelação (Proximidade de Tags)
+    const related = DATA.researchers.filter(x => x.id !== id && x.tags.some(t => r.tags.includes(t)));
+    document.getElementById('constellation-map').innerHTML = `
+        <p style="font-size:11px; margin-bottom:10px">Tags de Conexão:</p>
+        ${r.tags.map(t => `<span class="constellation-tag">#${t}</span>`).join('')}
+        <p style="font-size:11px; margin-top:15px">Pesquisadores Próximos na Rede:</p>
+        ${related.map(x => `<span style="font-size:12px; font-weight:600">→ ${x.name}</span>`).join('<br>')}
+    `;
+
+    // Metadados
+    document.getElementById('metadata-box').innerHTML = `
+        <p><strong>ORCID:</strong> ${r.orcid}</p>
+        <p style="margin-top:5px; font-size:12px">${r.bio}</p>
+    `;
+
+    // Instrumentos e Análise
+    renderQuestions();
+    document.getElementById('raw-transcript').value = r.analysis || "";
+
+    overlay.style.display = 'flex';
 }
 
-function closeComparison(){ selectedForComparison.clear(); document.getElementById('comparison-panel').style.display = 'none'; }
+function switchWF(view, btn) {
+    document.querySelectorAll('.wf-view').forEach(v => v.style.display = 'none');
+    document.querySelectorAll('.wf-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('view-' + view).style.display = 'block';
+    btn.classList.add('active');
+}
 
-// --- ORCID EDITOR ---
-function renderResearcherList(){
-    const list = document.getElementById('res-list');
-    list.innerHTML = DATA.researchers.map(r => `
-        <div class="list-item" onclick="editResearcher('${r.id}')">
-            <div class="avatar" style="width:32px; height:32px; font-size:10px">${r.photo ? `<img src="${r.photo}">` : r.name[0]}</div>
-            <div>
-                <div style="font-weight:800; font-size:13px">${r.name}</div>
-                <div style="font-size:10px; color:#aaa; text-transform:uppercase">${r.org}</div>
-            </div>
+// --- INSTRUMENTO & BLOG ---
+function renderQuestions() {
+    const r = DATA.researchers.find(x => x.id === activeId);
+    const list = document.getElementById('q-list');
+    list.innerHTML = r.questions.map((q, i) => `
+        <div class="instrument-box">
+            <input type="text" value="${q}" onchange="updateQ(${i}, this.value)" style="border:none; width:100%; font-weight:600; outline:none">
         </div>
     `).join('');
 }
 
-function editResearcher(id){
-    const r = DATA.researchers.find(x => x.id === id);
-    const editor = document.getElementById('res-editor');
-    editor.innerHTML = `
-        <div class="orcid-section">
-            <div class="section-title">Identificação & Foto</div>
-            <div class="field-group"><label>URL da Foto</label><input type="text" value="${r.photo}" onchange="updateVal('${id}','photo',this.value)"></div>
-            <div class="field-group"><label>Nome Completo</label><input type="text" value="${r.name}" onchange="updateVal('${id}','name',this.value)"></div>
-            <div class="field-group"><label>ORCID iD / Ref</label><input type="text" value="${r.orcid}" onchange="updateVal('${id}','orcid',this.value)"></div>
-            <div class="field-group"><label>Organização</label><input type="text" value="${r.org}" onchange="updateVal('${id}','org',this.value)"></div>
-        </div>
-        
-        <div class="orcid-section">
-            <div class="section-title">Biography (Moderação de Conteúdo)</div>
-            <div class="field-group"><label>Resumo Teórico</label><textarea rows="5" onchange="updateVal('${id}','bio',this.value)">${r.bio}</textarea></div>
-            <div class="field-group">
-                <label>Eixos Temáticos</label>
-                <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:10px">
-                    ${Object.entries(TAG_LABELS).map(([k,v]) => `
-                        <label style="display:flex; align-items:center; gap:5px; color:#000; cursor:pointer">
-                            <input type="checkbox" ${r.tags.includes(k)?'checked':''} onchange="toggleTag('${id}','${k}')" style="width:auto"> ${v}
-                        </label>
-                    `).join('')}
-                </div>
-            </div>
-        </div>
+function addQuestion() {
+    const r = DATA.researchers.find(x => x.id === activeId);
+    r.questions.push("Nova pergunta baseada em " + r.tags[0] + "...");
+    renderQuestions();
+    save();
+}
 
-        <div class="orcid-section">
-            <div class="section-title">ORCID: Employment & Education</div>
-            <div class="field-group"><label>Employment</label><textarea onchange="updateVal('${id}','employment',this.value)">${r.employment}</textarea></div>
-            <div class="field-group"><label>Education</label><textarea onchange="updateVal('${id}','education',this.value)">${r.education}</textarea></div>
-        </div>
+function updateQ(idx, val) {
+    const r = DATA.researchers.find(x => x.id === activeId);
+    r.questions[idx] = val;
+    save();
+}
 
-        <div class="orcid-section" style="border-style:dashed">
-            <div class="section-title">Geolocalização</div>
-            <div style="display:flex; gap:10px">
-                <input type="number" step="any" value="${r.lat}" placeholder="Latitude" onchange="updateVal('${id}','lat',parseFloat(this.value))">
-                <input type="number" step="any" value="${r.lng}" placeholder="Longitude" onchange="updateVal('${id}','lng',parseFloat(this.value))">
-            </div>
-        </div>
-        
-        <button class="btn btn-red" onclick="deleteResearcher('${id}')">Excluir Registro</button>
+function generateBlogText() {
+    const r = DATA.researchers.find(x => x.id === activeId);
+    const transcript = document.getElementById('raw-transcript').value;
+    r.analysis = transcript;
+    save();
+
+    const output = document.getElementById('blog-output');
+    output.style.display = 'block';
+    output.innerHTML = `
+        <p class="uppercase" style="font-size:10px; color:var(--s)">Rascunho Editorial</p>
+        <h3 style="margin:10px 0">${r.name}: Moderação e a fronteira do ${r.tags[0]}</h3>
+        <p>Em entrevista exclusiva ao Digilabour, ${r.name.split(' ')[0]} discute como a organização ${r.org} tem enfrentado os desafios de moderação de conteúdo...</p>
+        <div style="margin-top:10px; font-style:italic">"${transcript.substring(0, 150)}..."</div>
     `;
 }
 
-// --- HELPERS ---
-function updateVal(id, f, v){ const r=DATA.researchers.find(x=>x.id===id); if(r) r[f]=v; saveAll(); }
-function toggleTag(id, t){ const r=DATA.researchers.find(x=>x.id===id); if(r.tags.includes(t)) r.tags=r.tags.filter(i=>i!==t); else r.tags.push(t); saveAll(); }
-function switchPage(id, el){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-    document.getElementById(`page-${id}`).classList.add('active');
-    el.classList.add('active');
-    if(id === 'map') map.invalidateSize();
-}
-function openProfile(id){
-    const r = DATA.researchers.find(x => x.id === id);
-    const panel = document.getElementById('side-panel');
-    document.getElementById('panel-content').innerHTML = `
-        <span style="float:right; cursor:pointer; font-size:20px" onclick="document.getElementById('side-panel').classList.remove('open')">×</span>
-        <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px">
-            <div class="avatar" style="width:80px; height:80px; font-size:24px">${r.photo ? `<img src="${r.photo}">` : r.name[0]}</div>
-            <div>
-                <div style="font-size:11px; font-weight:800; color:#999; text-transform:uppercase">${r.org}</div>
-                <h2 class="serif" style="font-size:28px">${r.name}</h2>
-            </div>
-        </div>
-        <div class="serif" style="font-size:17px; margin-bottom:30px">${r.bio}</div>
-        <div class="section-title">Metadados Acadêmicos</div>
-        <div style="font-size:13px; margin-top:10px">
-            <p><strong>ORCID:</strong> ${r.orcid}</p>
-            <p style="margin-top:10px"><strong>Employment:</strong> ${r.employment}</p>
-        </div>
-    `;
-    panel.classList.add('open');
+function save() { localStorage.setItem('research_os_db', JSON.stringify(DATA)); }
+function closeDash() { document.getElementById('dashboard-overlay').style.display = 'none'; }
+function exportGlobal() {
+    const blob = new Blob([JSON.stringify(DATA, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup-pesquisa-completa.json'; a.click();
 }
 
-window.onload = () => { loadData(); initMap(); renderResearcherList(); };
+window.onload = init;
 </script>
 </body>
 </html>
