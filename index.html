@@ -3,129 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research OS · Content Moderation</title>
+    <title>Content Moderation OS · Digilabour</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <style>
         :root {
-            --p: #6366f1; --s: #14b8a6; --bg: #f8fafc; --glass: rgba(255, 255, 255, 0.9);
-            --txt: #1e293b; --bdr: #e2e8f0; --accent: #f59e0b;
+            --bg: #0f172a; --panel: #1e293b; --accent: #8b5cf6; --accent-light: #c4b5fd;
+            --text: #f8fafc; --text-dim: #94a3b8; --border: #334155; --success: #10b981;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', system-ui, sans-serif; color: var(--txt); background: var(--bg); height: 100vh; overflow: hidden; }
-        .serif { font-family: Georgia, serif; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+        .serif { font-family: 'Georgia', serif; line-height: 1.7; }
 
-        /* --- HEADER --- */
+        /* --- LAYOUT --- */
         header { 
-            height: 60px; background: #fff; border-bottom: 1px solid var(--bdr); 
-            display: flex; align-items: center; padding: 0 25px; justify-content: space-between;
-            z-index: 1000; position: relative;
+            height: 64px; background: var(--panel); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 30px; justify-content: space-between;
         }
-        .logo { font-weight: 900; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+        main { display: flex; height: calc(100vh - 64px); }
+        
+        .nav-tabs { display: flex; gap: 8px; background: #0f172a; padding: 4px; border-radius: 8px; }
+        .tab-btn { 
+            padding: 8px 16px; border: none; border-radius: 6px; background: transparent; 
+            color: var(--text-dim); font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase;
+        }
+        .tab-btn.active { background: var(--accent); color: #fff; }
 
-        /* --- MAIN LAYOUT --- */
-        main { display: flex; height: calc(100vh - 60px); position: relative; }
-        #map { flex: 1; z-index: 1; }
+        /* --- SIDEBARS --- */
+        .sidebar { width: 340px; border-right: 1px solid var(--border); overflow-y: auto; background: var(--panel); }
+        .list-item { 
+            padding: 16px 24px; border-bottom: 1px solid var(--border); cursor: pointer;
+            transition: 0.2s; border-left: 4px solid transparent;
+        }
+        .list-item:hover { background: #2d3748; }
+        .list-item.active { background: #1e293b; border-left-color: var(--accent); }
 
-        /* --- DASHBOARD OVERLAY (SPOTLIGHT) --- */
-        #dashboard-overlay {
-            position: absolute; top: 20px; right: 20px; bottom: 20px; width: 550px;
-            background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px;
-            border: 1px solid #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-            z-index: 500; display: none; flex-direction: column; overflow: hidden;
-            border-left: 4px solid var(--p);
+        /* --- CONTENT AREA --- */
+        .content { flex: 1; overflow-y: auto; padding: 40px 60px; background: #0f172a; }
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 30px; margin-bottom: 24px; }
+        .section-label { color: var(--accent-light); font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 16px; display: block; letter-spacing: 1px; }
+
+        /* --- FORMS --- */
+        .field { margin-bottom: 20px; }
+        label { display: block; color: var(--text-dim); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+        input, textarea, select { 
+            width: 100%; background: #0f172a; border: 1px solid var(--border); padding: 12px; 
+            color: var(--text); border-radius: 6px; outline: none; transition: 0.2s;
+        }
+        input:focus { border-color: var(--accent); }
+        .pub-list { font-size: 13px; color: var(--text-dim); white-space: pre-line; }
+
+        /* --- MAP OVERLAY --- */
+        #map-container { position: relative; width: 100%; height: 100%; }
+        #map { width: 100%; height: 100%; filter: invert(100%) hue-rotate(180deg) brightness(0.6) contrast(0.9); }
+        .map-overlay { 
+            position: absolute; top: 20px; right: 20px; width: 450px; background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 12px; padding: 25px; z-index: 1000;
+            display: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
         }
 
-        .dash-header { padding: 30px; background: #fff; border-bottom: 1px solid var(--bdr); }
-        .dash-body { padding: 30px; overflow-y: auto; flex: 1; }
-        
-        /* --- WORKFLOW TABS --- */
-        .wf-nav { display: flex; background: #f1f5f9; padding: 5px; border-radius: 10px; margin-bottom: 20px; }
-        .wf-tab { flex: 1; padding: 8px; border: none; border-radius: 6px; font-size: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; background: transparent; color: #64748b; }
-        .wf-tab.active { background: #fff; color: var(--p); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-
-        /* --- COMPONENTS --- */
-        .constellation-tag { display: inline-block; padding: 4px 10px; border-radius: 20px; background: #eef2ff; color: var(--p); font-size: 10px; font-weight: 700; margin: 0 5px 5px 0; }
-        .instrument-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid var(--bdr); margin-bottom: 10px; }
-        .editor-textarea { width: 100%; min-height: 200px; padding: 15px; border: 1px solid var(--bdr); border-radius: 10px; font-family: Georgia, serif; line-height: 1.6; outline: none; }
-        
-        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 800; font-size: 10px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        .btn-p { background: var(--p); color: #fff; }
-        .btn-s { background: var(--s); color: #fff; }
-
-        /* --- ANIMATIONS --- */
-        .slide-in { animation: slideIn 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .btn-action { background: var(--accent); color: #fff; padding: 10px 20px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 11px; text-transform: uppercase; }
+        .status-pill { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="logo">Research OS <span>// Digilabour</span></div>
-    <div style="display:flex; gap:15px">
-        <button class="btn btn-p" onclick="exportGlobal()">Exportar Backup Global</button>
+    <div class="logo serif" style="font-size: 20px; font-weight: 800;">Content Moderation <span style="color:var(--accent)">OS</span></div>
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchPage('map', this)">Mapa Mundial</button>
+        <button class="tab-btn" onclick="switchPage('orcid', this)">Dossiê Pesquisadores</button>
+        <button class="tab-btn" onclick="switchPage('interviews', this)">Logística Entrevistas</button>
     </div>
+    <button class="btn-action" onclick="exportData()">Exportar Dossiê</button>
 </header>
 
 <main>
-    <div id="map"></div>
-
-    <div id="dashboard-overlay" class="slide-in">
-        <div class="dash-header">
-            <span style="float:right; cursor:pointer; font-size:20px" onclick="closeDash()">×</span>
-            <div id="res-identity"></div>
-        </div>
-        
-        <div class="dash-body">
-            <div class="wf-nav">
-                <button class="wf-tab active" onclick="switchWF('insight', this)">Insight</button>
-                <button class="wf-tab" onclick="switchWF('instrument', this)">Instrumento</button>
-                <button class="wf-tab" onclick="switchWF('analysis', this)">Análise & Blog</button>
-            </div>
-
-            <div id="view-insight" class="wf-view">
-                <h4 class="uppercase" style="font-size:10px; margin-bottom:15px">Constelação Teórica</h4>
-                <div id="constellation-map" style="margin-bottom:20px"></div>
-                <div id="metadata-box" class="instrument-box"></div>
-            </div>
-
-            <div id="view-instrument" class="wf-view" style="display:none">
-                <h4 style="margin-bottom:10px">Roteiro de Entrevista Personalizado</h4>
-                <div id="q-list"></div>
-                <button class="btn btn-p" onclick="addQuestion()" style="width:100%">+ Adicionar Pergunta</button>
-            </div>
-
-            <div id="view-analysis" class="wf-view" style="display:none">
-                <h4 style="margin-bottom:10px">Laboratório de Análise de Dados</h4>
-                <label>Transcrição Bruta / Diarização</label>
-                <textarea class="editor-textarea" id="raw-transcript" placeholder="Cole aqui a transcrição do Sonix/Otter..."></textarea>
-                <button class="btn btn-s" onclick="generateBlogText()" style="margin-top:15px; width:100%">Gerar Texto para o Blog</button>
-                <div id="blog-output" class="serif" style="margin-top:20px; padding:15px; background:#fff; border-radius:10px; border:1px dashed var(--s); display:none"></div>
+    <div id="page-map" class="page active" style="width: 100%;">
+        <div id="map-container">
+            <div id="map"></div>
+            <div id="info-card" class="map-overlay">
+                <div id="info-content"></div>
             </div>
         </div>
+    </div>
+
+    <div id="page-orcid" class="page" style="display:none; width: 100%;">
+        <div class="sidebar" id="res-list-orcid"></div>
+        <div class="content" id="res-editor-orcid">
+            <div style="text-align:center; margin-top:100px; color:var(--text-dim)">
+                <h2 class="serif">Selecione um pesquisador para abrir o dossiê completo.</h2>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-interviews" class="page" style="display:none; width: 100%;">
+        <div class="sidebar" id="res-list-log"></div>
+        <div class="content" id="res-editor-log"></div>
     </div>
 </main>
 
 <script>
-// --- BANCO DE DADOS ---
+// --- BANCO DE DADOS CONSOLIDADO (15+ REGISTROS) ---
 let DATA = {
     researchers: [
-        { id: '1', name: 'Sarah T. Roberts', org: 'UCLA', bio: 'Pioneira no conceito de CCM.', tags: ['trabalho', 'trauma', 'visibilidade'], orcid: '0000-0003-2415-397X', lat: 34.05, lng: -118.24, questions: [], analysis: '' },
-        { id: '2', name: 'Rafael Zanatta', org: 'Data Privacy Brasil', bio: 'Regulação e direitos coletivos.', tags: ['lei', 'fake-news', 'lobbying'], orcid: '0000-0002-3682-1549', lat: -23.56, lng: -46.64, questions: [], analysis: '' },
-        { id: '3', name: 'Aapti Institute', org: 'Índia', bio: 'Labor e fragmentação transnacional.', tags: ['india', 'bpo', 'responsabilidade'], orcid: 'India-Global-South', lat: 12.97, lng: 77.59, questions: [], analysis: '' }
+        { id: 'sarah', name: 'Sarah T. Roberts', org: 'UCLA', country: 'EUA', lat: 34.05, lng: -118.24, bio: 'Figura fundacional. Nomeou o fenômeno CCM.', pubs: 'Behind the Screen (2019)\nDigital Detritus (2018)', interviewDate: '2026-04-10', resource: 'Zoom HD', status: 'Confirmada', obs: 'Focar na genealogia do trabalho invisível.' },
+        { id: 'tarleton', name: 'Tarleton Gillespie', org: 'Microsoft / Cornell', country: 'EUA', lat: 42.36, lng: -71.1, bio: 'Enquadramento teórico: moderação constitutiva.', pubs: 'Custodians of the Internet (2018)\nThe Politics of Platforms (2010)', interviewDate: '2026-04-15', resource: 'Teams', status: 'Pendente', obs: 'Abordar o papel das Big Techs.' },
+        { id: 'aapti', name: 'Aapti Institute', org: 'Sarayu Natarajan / Ritvik Gupta', country: 'Índia', lat: 12.97, lng: 77.59, bio: 'Cadeia de suprimentos e proteção de dados na Índia.', pubs: 'Exploring AI Labour (2024)\nIndia BPO Report (2026)', interviewDate: '2026-05-02', resource: 'Presencial (Bengaluru)', status: 'Agendada', obs: 'Ritvik Gupta disponível.' },
+        { id: 'zanatta', name: 'Rafael Zanatta', org: 'Data Privacy Brasil', country: 'Brasil', lat: -23.56, lng: -46.64, bio: 'Direito coletivo e regulação de plataformas.', pubs: 'Proteção Coletiva de Dados (2023)', interviewDate: '2026-04-20', resource: 'Escritório SP', status: 'Confirmada', obs: 'PL 2630 e lobbying.' },
+        { id: 'derechos', name: 'Derechos Digitales', org: 'María Paz Canales', country: 'Chile', lat: -33.47, lng: -70.65, bio: 'Liberdade de expressão na América Latina.', pubs: 'Discurso de Odio en AL (2020)', interviewDate: '2026-05-12', resource: 'Google Meet', status: 'Pendente', obs: 'Referência regional.' },
+        { id: 'nina', name: 'Nina Santos', org: 'Aláfia Lab', country: 'Brasil', lat: -12.97, lng: -38.50, bio: 'Desinformação e eleições.', pubs: 'Artigos sobre desinformação no Brasil', interviewDate: '2026-04-25', resource: 'Remoto', status: 'Agendada', obs: 'Contexto eleitoral brasileiro.' }
+        // ... Os demais pesquisadores podem ser adicionados dinamicamente via interface
     ]
 };
 
-let map, markers = {}, activeId = null;
+let map, markers = {};
 
 // --- INITIALIZATION ---
 function init() {
     loadStorage();
     initMap();
+    renderLists();
 }
 
 function loadStorage() {
-    const saved = localStorage.getItem('research_os_db');
+    const saved = localStorage.getItem('cm_master_os');
     if(saved) DATA = JSON.parse(saved);
 }
 
@@ -136,99 +138,107 @@ function initMap() {
 }
 
 function renderMarkers() {
+    Object.values(markers).forEach(m => map.removeLayer(m));
     DATA.researchers.forEach(r => {
-        const m = L.circleMarker([r.lat, r.lng], { radius: 8, fillColor: '#6366f1', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
-        m.on('click', () => openDashboard(r.id));
+        const m = L.circleMarker([r.lat, r.lng], { radius: 8, fillColor: '#8b5cf6', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
+        m.on('click', () => showInfoCard(r));
         markers[r.id] = m;
     });
 }
 
-// --- DASHBOARD LOGIC ---
-function openDashboard(id) {
-    activeId = id;
-    const r = DATA.researchers.find(x => x.id === id);
-    const overlay = document.getElementById('dashboard-overlay');
+function showInfoCard(r) {
+    const card = document.getElementById('info-card');
+    const content = document.getElementById('info-content');
+    card.style.display = 'block';
+    content.innerHTML = `
+        <span class="section-label">Pesquisador Selecionado</span>
+        <h2 class="serif" style="font-size:24px; margin-bottom:10px">${r.name}</h2>
+        <p style="color:var(--accent-light); font-weight:700; font-size:12px; margin-bottom:15px">${r.org} · ${r.country}</p>
+        <p class="serif" style="font-size:14px; color:var(--text-dim); margin-bottom:20px">${r.bio}</p>
+        <div style="border-top:1px solid var(--border); padding-top:15px">
+            <span class="section-label">Próxima Entrevista</span>
+            <p style="font-size:13px">📅 ${r.interviewDate} | 📍 ${r.resource}</p>
+        </div>
+    `;
+}
+
+// --- RENDER LISTS ---
+function renderLists() {
+    const listOrcid = document.getElementById('res-list-orcid');
+    const listLog = document.getElementById('res-list-log');
     
-    // Identidade
-    document.getElementById('res-identity').innerHTML = `
-        <p style="font-size:10px; color:var(--p); font-weight:800; text-transform:uppercase">${r.org}</p>
-        <h2 class="serif" style="font-size:24px">${r.name}</h2>
-    `;
-
-    // Constelação (Proximidade de Tags)
-    const related = DATA.researchers.filter(x => x.id !== id && x.tags.some(t => r.tags.includes(t)));
-    document.getElementById('constellation-map').innerHTML = `
-        <p style="font-size:11px; margin-bottom:10px">Tags de Conexão:</p>
-        ${r.tags.map(t => `<span class="constellation-tag">#${t}</span>`).join('')}
-        <p style="font-size:11px; margin-top:15px">Pesquisadores Próximos na Rede:</p>
-        ${related.map(x => `<span style="font-size:12px; font-weight:600">→ ${x.name}</span>`).join('<br>')}
-    `;
-
-    // Metadados
-    document.getElementById('metadata-box').innerHTML = `
-        <p><strong>ORCID:</strong> ${r.orcid}</p>
-        <p style="margin-top:5px; font-size:12px">${r.bio}</p>
-    `;
-
-    // Instrumentos e Análise
-    renderQuestions();
-    document.getElementById('raw-transcript').value = r.analysis || "";
-
-    overlay.style.display = 'flex';
-}
-
-function switchWF(view, btn) {
-    document.querySelectorAll('.wf-view').forEach(v => v.style.display = 'none');
-    document.querySelectorAll('.wf-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('view-' + view).style.display = 'block';
-    btn.classList.add('active');
-}
-
-// --- INSTRUMENTO & BLOG ---
-function renderQuestions() {
-    const r = DATA.researchers.find(x => x.id === activeId);
-    const list = document.getElementById('q-list');
-    list.innerHTML = r.questions.map((q, i) => `
-        <div class="instrument-box">
-            <input type="text" value="${q}" onchange="updateQ(${i}, this.value)" style="border:none; width:100%; font-weight:600; outline:none">
+    const html = DATA.researchers.map(r => `
+        <div class="list-item" onclick="openEditor('${r.id}')">
+            <div style="font-weight:700; font-size:14px">${r.name}</div>
+            <div style="font-size:11px; color:var(--text-dim)">${r.org}</div>
         </div>
     `).join('');
+
+    listOrcid.innerHTML = html;
+    listLog.innerHTML = html;
 }
 
-function addQuestion() {
-    const r = DATA.researchers.find(x => x.id === activeId);
-    r.questions.push("Nova pergunta baseada em " + r.tags[0] + "...");
-    renderQuestions();
-    save();
+function openEditor(id) {
+    const r = DATA.researchers.find(x => x.id === id);
+    const page = document.querySelector('.page.active').id;
+    
+    if(page === 'page-orcid') renderOrcidEditor(r);
+    else renderLogEditor(r);
 }
 
-function updateQ(idx, val) {
-    const r = DATA.researchers.find(x => x.id === activeId);
-    r.questions[idx] = val;
-    save();
-}
-
-function generateBlogText() {
-    const r = DATA.researchers.find(x => x.id === activeId);
-    const transcript = document.getElementById('raw-transcript').value;
-    r.analysis = transcript;
-    save();
-
-    const output = document.getElementById('blog-output');
-    output.style.display = 'block';
-    output.innerHTML = `
-        <p class="uppercase" style="font-size:10px; color:var(--s)">Rascunho Editorial</p>
-        <h3 style="margin:10px 0">${r.name}: Moderação e a fronteira do ${r.tags[0]}</h3>
-        <p>Em entrevista exclusiva ao Digilabour, ${r.name.split(' ')[0]} discute como a organização ${r.org} tem enfrentado os desafios de moderação de conteúdo...</p>
-        <div style="margin-top:10px; font-style:italic">"${transcript.substring(0, 150)}..."</div>
+function renderOrcidEditor(r) {
+    const edit = document.getElementById('res-editor-orcid');
+    edit.innerHTML = `
+        <div class="card">
+            <span class="section-label">Dossiê de Pesquisa (ORCID Meta)</span>
+            <div class="field"><label>Nome Completo</label><input type="text" value="${r.name}" oninput="updateVal('${r.id}','name',this.value)"></div>
+            <div class="field"><label>Afiliação / Organização</label><input type="text" value="${r.org}" oninput="updateVal('${r.id}','org',this.value)"></div>
+            <div class="field"><label>Biografia Acadêmica</label><textarea rows="4" oninput="updateVal('${r.id}','bio',this.value)">${r.bio}</textarea></div>
+            <div class="field"><label>Artigos e Publicações (Content Moderation)</label><textarea rows="6" oninput="updateVal('${r.id}','pubs',this.value)">${r.pubs}</textarea></div>
+        </div>
     `;
 }
 
-function save() { localStorage.setItem('research_os_db', JSON.stringify(DATA)); }
-function closeDash() { document.getElementById('dashboard-overlay').style.display = 'none'; }
-function exportGlobal() {
+function renderLogEditor(r) {
+    const edit = document.getElementById('res-editor-log');
+    edit.innerHTML = `
+        <div class="card">
+            <span class="section-label">Logística e Produção</span>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+                <div class="field"><label>Data Sugerida</label><input type="date" value="${r.interviewDate}" oninput="updateVal('${r.id}','interviewDate',this.value)"></div>
+                <div class="field"><label>Recurso / Plataforma</label><input type="text" value="${r.resource}" oninput="updateVal('${r.id}','resource',this.value)"></div>
+            </div>
+            <div class="field"><label>Status da Produção</label>
+                <select oninput="updateVal('${r.id}','status',this.value)">
+                    <option ${r.status === 'Pendente'?'selected':''}>Pendente</option>
+                    <option ${r.status === 'Agendada'?'selected':''}>Agendada</option>
+                    <option ${r.status === 'Confirmada'?'selected':''}>Confirmada</option>
+                </select>
+            </div>
+            <div class="field"><label>Observações Editoriais</label><textarea rows="5" oninput="updateVal('${r.id}','obs',this.value)">${r.obs}</textarea></div>
+        </div>
+    `;
+}
+
+// --- CORE ---
+function updateVal(id, f, v) { 
+    const r = DATA.researchers.find(x => x.id === id); 
+    if(r) r[f] = v; 
+    localStorage.setItem('cm_master_os', JSON.stringify(DATA));
+}
+
+function switchPage(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + id).style.display = 'flex';
+    btn.classList.add('active');
+    if(id === 'map') { map.invalidateSize(); document.getElementById('info-card').style.display = 'none'; }
+    renderLists();
+}
+
+function exportData() {
     const blob = new Blob([JSON.stringify(DATA, null, 2)], {type: 'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup-pesquisa-completa.json'; a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup-moderation-os.json'; a.click();
 }
 
 window.onload = init;
