@@ -1,5 +1,3 @@
-# moderacaodeconteudo
-
 # Content Moderation CMS · Digilabour
 > Dashboard de Gestão de Dados e Insights da Série de Entrevistas "Quem Modera o Mundo?".
 
