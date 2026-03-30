@@ -8,132 +8,86 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <style>
         :root {
-            --bg: #0b0f1a; --panel: #161b2c; --accent: #7c3aed; --accent-glow: rgba(124, 58, 237, 0.4);
-            --text: #f8fafc; --text-dim: #94a3b8; --border: #2d334a; --white: #ffffff;
+            --vinho: #4a0404; --vinho-light: #721c1c; --bg: #fdfcfb;
+            --text: #1a1a1a; --text-muted: #666; --border: #d1d1d1;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
         .serif { font-family: 'Georgia', serif; line-height: 1.6; }
 
-        header { height: 65px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .nav-tabs { display: flex; gap: 10px; background: #0b0f1a; padding: 5px; border-radius: 12px; }
-        .tab-btn { padding: 10px 20px; border: none; border-radius: 8px; background: transparent; color: var(--text-dim); font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .tab-btn.active { background: var(--accent); color: #fff; box-shadow: 0 0 15px var(--accent-glow); }
+        header { height: 70px; background: var(--vinho); color: #fff; display: flex; align-items: center; padding: 0 30px; justify-content: space-between; z-index: 1000; position: relative; }
+        .logo { font-weight: 800; font-size: 18px; letter-spacing: 1px; text-transform: uppercase; }
+        
+        .nav-tabs { display: flex; gap: 10px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 8px; }
+        .tab-btn { padding: 10px 20px; border: none; border-radius: 5px; background: transparent; color: rgba(255,255,255,0.7); font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .tab-btn.active { background: #fff; color: var(--vinho); }
 
-        main { display: flex; height: calc(100vh - 65px); position: relative; }
-        .sidebar { width: 360px; border-right: 1px solid var(--border); overflow-y: auto; background: var(--panel); z-index: 10; }
-        .content { flex: 1; overflow-y: auto; padding: 50px; background: #0b0f1a; }
+        main { display: flex; height: calc(100vh - 70px); position: relative; }
+        .sidebar { width: 380px; border-right: 1px solid var(--border); overflow-y: auto; background: #fff; z-index: 10; }
+        .content { flex: 1; overflow-y: auto; padding: 50px; background: var(--bg); }
 
-        /* --- CARDS & LISTS --- */
-        .list-item { padding: 20px 25px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; }
-        .list-item:hover { background: #1e253d; }
-        .list-item.active { border-left: 5px solid var(--accent); background: #1e253d; }
-        .list-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
+        /* --- LISTS --- */
+        .list-item { padding: 15px 25px; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 15px; }
+        .list-item:hover { background: #f9f4f4; }
+        .list-item.active { border-left: 6px solid var(--vinho); background: #fef1f1; }
+        .list-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--vinho); }
 
-        /* --- DOSSIER STYLE --- */
-        .dossier-header { display: flex; gap: 40px; margin-bottom: 40px; align-items: flex-start; }
-        .big-photo { width: 220px; height: 220px; border-radius: 20px; background: #1e253d; overflow: hidden; border: 4px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* --- DOSSIER --- */
+        .dossier-header { display: flex; gap: 40px; margin-bottom: 40px; }
+        .big-photo { width: 200px; height: 200px; border-radius: 10px; border: 5px solid #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; flex-shrink: 0; }
         .big-photo img { width: 100%; height: 100%; object-fit: cover; }
         
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; }
-        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 15px; padding: 30px; margin-bottom: 25px; }
-        .label { color: var(--accent); font-size: 11px; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1px; }
+        .card { background: #fff; border: 1px solid var(--border); padding: 30px; margin-bottom: 25px; border-radius: 4px; }
+        .label { color: var(--vinho); font-size: 10px; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; display: block; border-bottom: 1px solid #eee; padding-bottom: 4px; }
         
-        /* --- INPUTS --- */
-        input, textarea { width: 100%; background: #0b0f1a; border: 1px solid var(--border); padding: 12px; color: var(--text); border-radius: 8px; margin-bottom: 15px; outline: none; font-size: 14px; }
-        input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        input, textarea, select { width: 100%; background: #fcfcfc; border: 1px solid #ddd; padding: 12px; color: var(--text); border-radius: 4px; margin-bottom: 15px; outline: none; font-size: 14px; }
+        input:focus { border-color: var(--vinho); }
 
-        #map { width: 100%; height: 100%; filter: invert(95%) hue-rotate(180deg) brightness(0.9); }
-        
-        /* --- POPUP MAPA --- */
-        .map-popup { background: var(--panel) !important; color: #fff !important; border-radius: 12px !important; padding: 10px; }
-        .btn-action { background: var(--accent); color: #fff; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 11px; text-transform: uppercase; }
+        #map { width: 100%; height: 100%; filter: sepia(0.2) contrast(1.1); }
+        .btn-vinho { background: var(--vinho); color: #fff; border: none; padding: 12px 25px; border-radius: 4px; font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 11px; }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="serif" style="font-size: 22px; font-weight: 800;">Moderation <span style="color:var(--accent)">Intelligence</span></div>
+    <div class="logo serif">Content Moderation <span style="font-weight:300; opacity:0.8">Intelligence OS</span></div>
     <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('map', this)">Mapa Mundial</button>
-        <button class="tab-btn" onclick="switchTab('dossier', this)">Dossiê Acadêmico</button>
-        <button class="tab-btn" onclick="switchTab('log', this)">Logística</button>
+        <button class="tab-btn active" onclick="switchTab('map', this)">Mapa</button>
+        <button class="tab-btn" onclick="switchTab('dossier', this)">Dossiês Acadêmicos</button>
+        <button class="tab-btn" onclick="switchTab('analysis', this)">Análise & Blog</button>
     </div>
-    <button onclick="exportData()" class="btn-action">Exportar Banco Global</button>
+    <button onclick="exportData()" class="btn-vinho" style="background:#fff; color:var(--vinho)">Exportar Tudo</button>
 </header>
 
 <main>
-    <div id="page-map" class="page active" style="width:100%; position:relative;">
+    <div id="page-map" class="page active" style="width:100%;">
         <div id="map"></div>
     </div>
 
     <div id="page-dossier" class="page" style="display:none; width:100%;">
         <div class="sidebar" id="list-dossier"></div>
-        <div class="content" id="editor-dossier">
-            <div style="text-align:center; margin-top:150px; color:var(--text-dim);">
-                <p style="font-size: 3rem; margin-bottom: 20px;">🕵️‍♂️</p>
-                <p class="serif" style="font-size: 1.5rem;">Selecione um pesquisador para abrir a ficha técnica completa.</p>
-            </div>
-        </div>
+        <div class="content" id="editor-dossier"></div>
     </div>
 
-    <div id="page-log" class="page" style="display:none; width:100%;">
-        <div class="sidebar" id="list-log"></div>
-        <div class="content" id="editor-log"></div>
+    <div id="page-analysis" class="page" style="display:none; width:100%;">
+        <div class="sidebar" id="list-analysis"></div>
+        <div class="content" id="editor-analysis"></div>
     </div>
 </main>
 
 <script>
 let DATA = {
     researchers: [
-        { 
-            id: 'sarah', 
-            name: 'Sarah T. Roberts', 
-            org: 'UCLA — Gender, Information & Labor Studies', 
-            lat: 34.05, lng: -118.24, 
-            bio: 'Figura fundacional. Criadora do conceito de commercial content moderation (CCM). Nomeada 2025 TIME100 AI.', 
-            pubs: '• Behind the Screen (Yale UP, 2019)\n• Commercial Content Moderation: Digital Laborers\' Dirty Work (2016)\n• Digital Detritus (2018)', 
-            img: 'https://digilabour.com.br/wp-content/uploads/2019/09/sarah-t-roberts-1.jpg', 
-            email: 'sarah.roberts@ucla.edu', linkedin: 'linkedin.com/in/sarahtroberts', orcid: '0000-0003-2415-397X',
-            date: '2026-04-10', status: 'Confirmada' 
-        },
-        { 
-            id: 'tarleton', 
-            name: 'Tarleton Gillespie', 
-            org: 'Microsoft Research / Cornell University', 
-            lat: 42.36, lng: -71.1, 
-            bio: 'Especialista em governança de plataformas e o papel dos algoritmos na moderação pública.', 
-            pubs: '• Custodians of the Internet (2018)\n• The Politics of Platforms (2010)\n• Do Not Recommend (2022)', 
-            img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Tarleton', 
-            email: 'tarleton@cornell.edu', linkedin: 'linkedin.com/in/tarletongillespie', orcid: '0000-0002-3682-1549',
-            date: '2026-04-15', status: 'Pendente' 
-        },
-        { 
-            id: 'matheus', 
-            name: 'Matheus Viana Braz', 
-            org: 'UEM / Laboratório LATRAPS', 
-            lat: -23.42, lng: -51.93, 
-            bio: 'Psicólogo social. Pesquisa microtrabalho e a saúde mental dos moderadores de dados no Brasil.', 
-            pubs: '• Ideologia gerencialista e plataformas de treinamento (2022)\n• O Chão de Fábrica da IA (2023)', 
-            img: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Matheus', 
-            email: 'mvbraz@uem.br', linkedin: 'linkedin.com/in/matheus-viana-braz', lattes: 'lattes.cnpq.br/2342...',
-            date: '2026-04-20', status: 'Agendada' 
-        },
-        { 
-            id: 'tatiana', 
-            name: 'Tatiana Dias', 
-            org: 'The Intercept Brasil / CTRL+Z', 
-            lat: -23.55, lng: -46.63, 
-            bio: 'Jornalista investigativa de tecnologia. Liderou investigações sobre moderação de conteúdo no Brasil.', 
-            pubs: '• Série "O Chão de Fábrica da IA"\n• Investigações sobre Vigilância e Big Tech', 
-            img: 'https://digilabour.com.br/wp-content/uploads/2021/05/tatiana-dias.jpg', 
-            email: 'tatiana.dias@theintercept.com', linkedin: 'linkedin.com/in/tatianadias', orcid: 'N/A',
-            date: '2026-04-22', status: 'Confirmada' 
-        }
+        { id: 'sarah', name: 'Sarah T. Roberts', org: 'UCLA', lat: 34.05, lng: -118.24, bio: 'Criadora do CCM. TIME100 AI.', pubs: 'Behind the Screen (2019)', img: 'https://digilabour.com.br/wp-content/uploads/2019/09/sarah-t-roberts-1.jpg', email: 'sarah.roberts@ucla.edu', linkedin: 'linkedin.com/in/sarahtroberts', orcid: '0000-0003-2415-397X', analysis: '', blogDraft: '' },
+        { id: 'tarleton', name: 'Tarleton Gillespie', org: 'Microsoft / Cornell', lat: 42.36, lng: -71.1, bio: 'Moderação constitutiva.', pubs: 'Custodians of the Internet (2018)', img: 'https://api.dicebear.com/7.x/initials/svg?seed=TG', email: 'tarleton@cornell.edu', linkedin: 'linkedin.com/in/tarletongillespie', orcid: '0000-0002-3682-1549', analysis: '', blogDraft: '' },
+        { id: 'matheus', name: 'Matheus Viana Braz', org: 'UEM / LATRAPS', lat: -23.42, lng: -51.93, bio: 'Microtrabalho no Brasil.', pubs: 'Chão de Fábrica da IA', img: 'https://api.dicebear.com/7.x/initials/svg?seed=MB', email: 'mvbraz@uem.br', linkedin: 'linkedin.com/in/matheus-viana-braz', orcid: 'Lattes', analysis: '', blogDraft: '' },
+        { id: 'tatiana', name: 'Tatiana Dias', org: 'Intercept Brasil', lat: -23.55, lng: -46.63, bio: 'Jornalismo investigativo.', pubs: 'Série CTRL+Z', img: 'https://digilabour.com.br/wp-content/uploads/2021/05/tatiana-dias.jpg', email: 'tatiana.dias@theintercept.com', linkedin: 'linkedin.com/in/tatianadias', orcid: 'N/A', analysis: '', blogDraft: '' },
+        { id: 'aapti', name: 'Aapti Institute', org: 'Sarayu Natarajan / Ritvik Gupta', lat: 12.97, lng: 77.59, bio: 'Cadeia de suprimentos na Índia.', pubs: 'Exploring AI Labour (2024)', img: 'https://api.dicebear.com/7.x/initials/svg?seed=AA', email: 'contact@aapti.in', linkedin: 'linkedin.com/company/aapti-institute', orcid: 'N/A', analysis: '', blogDraft: '' },
+        { id: 'derechos', name: 'Derechos Digitales', org: 'María Paz Canales / Marianne Díaz', lat: -33.47, lng: -70.65, bio: 'América Latina e Direitos Digitais.', pubs: 'Discurso de Odio en AL', img: 'https://api.dicebear.com/7.x/initials/svg?seed=DD', email: 'info@derechosdigitales.org', linkedin: 'linkedin.com/company/derechos-digitales', orcid: 'N/A', analysis: '', blogDraft: '' },
+        { id: 'nina', name: 'Nina Santos', org: 'Aláfia Lab / UFBA', lat: -12.97, lng: -38.5, bio: 'Desinformação e eleições.', pubs: 'Estudos sobre desinformação no Brasil', img: 'https://digilabour.com.br/wp-content/uploads/2023/08/nina-santos-min.jpg', email: 'nina@alafia.lab', linkedin: 'linkedin.com/in/ninasantos', orcid: 'N/A', analysis: '', blogDraft: '' },
+        { id: 'rafael', name: 'Rafael Zanatta', org: 'Data Privacy Brasil', lat: -23.56, lng: -46.64, bio: 'Regulação de dados coletivos.', pubs: 'Proteção Coletiva de Dados (2023)', img: 'https://digilabour.com.br/wp-content/uploads/2021/04/rafael-zanatta.jpg', email: 'rafael@dataprivacy.org', linkedin: 'linkedin.com/in/rafael-zanatta', orcid: '0000-0002-3682-1549', analysis: '', blogDraft: '' }
     ]
 };
-
-let map;
 
 function init() {
     map = L.map('map', { center: [15, 0], zoom: 2, zoomControl: false });
@@ -144,8 +98,8 @@ function init() {
 
 function renderMarkers() {
     DATA.researchers.forEach(r => {
-        const marker = L.circleMarker([r.lat, r.lng], { radius: 10, fillColor: '#7c3aed', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
-        marker.bindPopup(`<div class="map-popup"><b style="font-size:14px">${r.name}</b><br><span style="font-size:11px">${r.org}</span><br><br><button onclick="switchTab('dossier', document.querySelectorAll('.tab-btn')[1]); openProfile('${r.id}')" style="background:#7c3aed; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:10px; font-weight:800">VER DOSSIÊ</button></div>`);
+        L.circleMarker([r.lat, r.lng], { radius: 8, fillColor: '#4a0404', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map)
+         .bindPopup(`<b>${r.name}</b><br>${r.org}`);
     });
 }
 
@@ -153,72 +107,50 @@ function renderLists() {
     const html = DATA.researchers.map(r => `
         <div class="list-item" onclick="openProfile('${r.id}')">
             <img src="${r.img}" class="list-img">
-            <div>
-                <div style="font-weight:800; font-size:14px">${r.name}</div>
-                <div style="font-size:11px; color:var(--text-dim)">${r.org}</div>
-            </div>
+            <div><div style="font-weight:800; font-size:14px">${r.name}</div><div style="font-size:11px; color:var(--text-muted)">${r.org}</div></div>
         </div>
     `).join('');
     document.getElementById('list-dossier').innerHTML = html;
-    document.getElementById('list-log').innerHTML = html;
+    document.getElementById('list-analysis').innerHTML = html;
 }
 
 function openProfile(id) {
     const r = DATA.researchers.find(x => x.id === id);
     const activeTab = document.querySelector('.tab-btn.active').innerText;
 
-    if (activeTab === 'DOSSIÊ ACADÊMICO') {
+    if (activeTab === 'DOSSIÊS ACADÊMICOS') {
         document.getElementById('editor-dossier').innerHTML = `
-            <div class="dossier-header">
-                <div class="big-photo"><img src="${r.img}"></div>
-                <div style="flex:1">
-                    <span class="label">Nome Completo</span><h1 class="serif" style="font-size:32px; margin-bottom:10px">${r.name}</h1>
-                    <span class="label">Organização / Instituição</span><p class="serif" style="font-size:18px; color:var(--text-dim)">${r.org}</p>
-                    <div class="info-grid" style="margin-top:25px">
-                        <div><span class="label">E-mail de Contato</span><input type="text" value="${r.email || ''}" oninput="update('${r.id}','email',this.value)"></div>
-                        <div><span class="label">LinkedIn</span><input type="text" value="${r.linkedin || ''}" oninput="update('${r.id}','linkedin',this.value)"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <span class="label">Mini Biografia Editorial</span>
-                <textarea rows="4" class="serif" oninput="update('${r.id}','bio',this.value)">${r.bio}</textarea>
-            </div>
-            <div class="card">
-                <span class="label">Publicações Acadêmicas em "Content Moderation"</span>
-                <textarea rows="10" class="serif" style="background:#0b0f1a" oninput="update('${r.id}','pubs',this.value)">${r.pubs}</textarea>
-            </div>
-            <div class="info-grid">
-                <div class="card"><span class="label">ORCID iD</span><input type="text" value="${r.orcid || ''}" oninput="update('${r.id}','orcid',this.value)"></div>
-                <div class="card"><span class="label">Lattes / ResearchGate</span><input type="text" value="${r.lattes || ''}" oninput="update('${r.id}','lattes',this.value)"></div>
+            <div class="dossier-header"><div class="big-photo"><img src="${r.img}"></div><div style="flex:1"><span class="label">Nome</span><h1 class="serif">${r.name}</h1><span class="label">Organização</span><p class="serif">${r.org}</p></div></div>
+            <div class="card"><span class="label">Biografia Acadêmica</span><textarea rows="4" class="serif" oninput="update('${r.id}','bio',this.value)">${r.bio}</textarea></div>
+            <div class="card"><span class="label">Publicações Acadêmicas</span><textarea rows="6" oninput="update('${r.id}','pubs',this.value)">${r.pubs}</textarea></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px">
+                <div class="card"><span class="label">E-mail</span><input value="${r.email}" oninput="update('${r.id}','email',this.value)"></div>
+                <div class="card"><span class="label">LinkedIn</span><input value="${r.linkedin}" oninput="update('${r.id}','linkedin',this.value)"></div>
             </div>
         `;
     } else {
-        renderLogistics(r);
+        document.getElementById('editor-analysis').innerHTML = `
+            <div class="card"><h2 class="serif">Análise de Dados: ${r.name}</h2><p class="serif" style="color:var(--text-muted)">Traduza ou cole a transcrição bruta abaixo para gerar o rascunho do blog.</p></div>
+            <div class="card"><span class="label">Transcrição Bruta / Notas de Campo</span><textarea rows="10" oninput="update('${r.id}','analysis',this.value)">${r.analysis || ''}</textarea></div>
+            <button class="btn-vinho" onclick="generateBlog('${r.id}')">Gerar Rascunho para Blog</button>
+            <div id="blog-output" class="card serif" style="margin-top:20px; display:${r.blogDraft ? 'block' : 'none'}">
+                <span class="label">Rascunho Editorial</span><div style="white-space:pre-wrap">${r.blogDraft || ''}</div>
+            </div>
+        `;
     }
 }
 
-function renderLogistics(r) {
-    document.getElementById('editor-log').innerHTML = `
-        <div class="card">
-            <h2 class="serif">Gestão de Entrevista: ${r.name}</h2>
-            <div style="margin-top:20px">
-                <span class="label">Data Prevista</span><input type="date" value="${r.date}" oninput="update('${r.id}','date',this.value)">
-                <span class="label">Status de Produção</span>
-                <select oninput="update('${r.id}','status',this.value)">
-                    <option ${r.status=='Pendente'?'selected':''}>Pendente</option>
-                    <option ${r.status=='Agendada'?'selected':''}>Agendada</option>
-                    <option ${r.status=='Confirmada'?'selected':''}>Confirmada</option>
-                </select>
-            </div>
-        </div>
-    `;
+function generateBlog(id) {
+    const r = DATA.researchers.find(x => x.id === id);
+    const draft = `Título Sugerido: ${r.name} e os desafios da Moderação em ${r.org}\n\nLead: Em entrevista ao Digilabour, o(a) pesquisador(a) ${r.name} discutiu como a sua pesquisa sobre "${r.bio}" está redefinindo o campo.\n\nInsight da Entrevista: ${r.analysis.substring(0, 300)}...`;
+    r.blogDraft = draft;
+    openProfile(id);
 }
 
 function update(id, field, val) {
     const r = DATA.researchers.find(x => x.id === id);
     r[field] = val;
-    localStorage.setItem('moderation_intel_db', JSON.stringify(DATA));
+    localStorage.setItem('moderation_bordeaux_db', JSON.stringify(DATA));
 }
 
 function switchTab(tab, btn) {
@@ -231,7 +163,7 @@ function switchTab(tab, btn) {
 
 function exportData() {
     const blob = new Blob([JSON.stringify(DATA, null, 2)], {type: 'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'moderation-intel-backup.json'; a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'moderation-intel-vinho.json'; a.click();
 }
 
 window.onload = init;
