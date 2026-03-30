@@ -27,10 +27,9 @@
             color: var(--text-main); background: var(--bg); line-height: 1.6; overflow: hidden;
         }
 
-        /* --- TYPOGRAPHY & UTILS --- */
+        /* --- TYPOGRAPHY --- */
         .serif { font-family: var(--serif); }
         .uppercase { text-transform: uppercase; letter-spacing: 1px; font-size: 11px; font-weight: 700; }
-        button:active { transform: translateY(1px); }
 
         /* --- TOP NAV --- */
         #topnav {
@@ -38,7 +37,7 @@
             display: flex; align-items: center; padding: 0 40px;
             position: sticky; top: 0; z-index: 1000; background: #fff; gap: 40px;
         }
-        .brand { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; flex-shrink: 0; }
+        .brand { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; flex-shrink: 0; cursor: pointer; }
         
         .nav-tabs { display: flex; gap: 30px; height: 100%; }
         .nav-tab { 
@@ -84,9 +83,9 @@
         }
         .legend-item { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 12px; cursor: pointer; }
         .legend-item.inactive { opacity: 0.3; text-decoration: line-through; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #000; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
 
-        /* --- EDITORIAL PANEL --- */
+        /* --- SIDE PANEL --- */
         #side-panel {
             width: var(--panel); background: #fff; border-left: 1px solid var(--border);
             transform: translateX(100%); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -103,14 +102,13 @@
         .list-item.active { border-left: 4px solid var(--accent); background: var(--surface-alt); }
         .editor-area { flex: 1; padding: 60px 80px; overflow-y: auto; background: #fff; }
 
-        /* --- FORMS & BUTTONS --- */
+        /* --- FORMS --- */
         .field { margin-bottom: 25px; }
         label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: #888; }
         input, textarea, select { 
             width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 2px; 
             font-family: inherit; font-size: 14px; background: #fafafa;
         }
-        input:focus { outline: none; border-color: #000; background: #fff; }
         .btn { 
             background: #000; color: #fff; padding: 12px 24px; border: none; 
             font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; 
@@ -119,32 +117,25 @@
             position: fixed; bottom: 30px; right: 30px; background: #000; color: #fff;
             padding: 15px 25px; font-size: 12px; z-index: 3000; display: none;
         }
-
-        /* --- DIARIZATION (SONIX/REV STYLE) --- */
-        .transcript-line { margin-bottom: 20px; display: flex; gap: 15px; }
-        .speaker { font-weight: 800; font-size: 11px; text-transform: uppercase; width: 100px; flex-shrink: 0; color: #999; }
-        .dialogue { font-family: var(--serif); font-size: 16px; color: #333; line-height: 1.8; }
     </style>
 </head>
 <body>
 
 <div id="topnav">
-    <div class="brand">Digilabour</div>
+    <div class="brand" onclick="location.reload()">Digilabour</div>
     <div class="search-container">
         <span class="search-icon">🔍</span>
-        <input type="text" class="search-input" id="global-search" placeholder="Buscar insights, bios ou falas..." oninput="deepSearch(this.value)">
+        <input type="text" class="search-input" id="global-search" placeholder="Buscar insights ou entrevistas..." oninput="deepSearch(this.value)">
     </div>
     <div class="nav-tabs">
         <div class="nav-tab active" onclick="switchPage('map', this)">Mapa</div>
         <div class="nav-tab" onclick="switchPage('list', this)">Pesquisadores</div>
         <div class="nav-tab" onclick="switchPage('episodes', this)">Episódios</div>
     </div>
-    <button class="btn" onclick="exportData()" style="margin-left:auto; background:none; color:#000; border:1px solid #000">Exportar</button>
+    <button class="btn" onclick="exportData()" style="margin-left:auto; background:none; color:#000; border:1px solid #000">Exportar JSON</button>
 </div>
 
-<div id="search-overlay">
-    <div class="search-body" id="search-results"></div>
-</div>
+<div id="search-overlay"><div class="search-body" id="search-results"></div></div>
 
 <div class="page active" id="page-map">
     <div id="map"></div>
@@ -175,10 +166,9 @@
     </div>
 </div>
 
-<div id="toast-msg" class="toast">Alterações salvas no banco local.</div>
+<div id="toast-msg" class="toast">Alterações salvas localmente.</div>
 
 <script>
-// --- DATA E CONFIG ---
 const THEMES = {
     w: { label: 'Trabalho & Saúde', color: '#000' },
     g: { label: 'Governança Digital', color: '#666' },
@@ -191,7 +181,6 @@ let DATA = { researchers: [], episodes: [] };
 let map, markers = {};
 let activeFilters = new Set(Object.keys(THEMES));
 
-// --- CORE LOGIC ---
 function init() {
     loadStorage();
     initMap();
@@ -204,13 +193,12 @@ function loadStorage() {
     const saved = localStorage.getItem('digilabour_final_db');
     if(saved) DATA = JSON.parse(saved);
     else {
-        // Mock data para Luiz Lopes (Pesquisador/Usuário)
         DATA.researchers = [
-            { id: 'sarah', name: 'Sarah T. Roberts', org: 'UCLA', country: 'EUA', lat: 34.05, lng: -118.24, tags: ['w','s'], bio: 'Especialista em moderação comercial de conteúdo.', works: 'Behind the Screen (2019)' },
-            { id: 'milagros', name: 'Milagros Miceli', org: 'DAIR Institute', country: 'Alemanha', lat: 52.52, lng: 13.40, tags: ['w','a'], bio: 'Socióloga investigando labor de dados no Sul Global.', works: 'Data Workers Inquiry' }
+            { id: 'sarah', name: 'Sarah T. Roberts', org: 'UCLA', country: 'EUA', lat: 34.05, lng: -118.24, tags: ['w','s'], bio: 'Criadora do conceito de moderação comercial de conteúdo.', works: 'Behind the Screen (2019)' },
+            { id: 'tarleton', name: 'Tarleton Gillespie', org: 'Microsoft Research', country: 'EUA', lat: 42.36, lng: -71.10, tags: ['g','a'], bio: 'Autor de Custodians of the Internet.', works: 'The Politics of Platforms' }
         ];
         DATA.episodes = [
-            { id: 1, title: 'O Trabalho Invisível', researchers: ['sarah'], body: 'P: Como você define moderação?\nR: É o trabalho de triagem que mantém a internet limpa.', status: 'published' }
+            { id: 1, title: 'O Trabalho Invisível', researchers: ['sarah'], body: 'P: O que é moderação?\nR: É o trabalho que sustenta as redes.', status: 'published' }
         ];
     }
 }
@@ -222,7 +210,6 @@ function save() {
     setTimeout(() => t.style.display = 'none', 2000);
 }
 
-// --- MAP & LEGEND ---
 function initMap() {
     map = L.map('map', { center: [20, 0], zoom: 3, zoomControl: false });
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
@@ -257,49 +244,35 @@ function updateMarkers() {
     });
 }
 
-// --- SEARCH (LOOPPANEL STYLE) ---
 function deepSearch(q) {
     const overlay = document.getElementById('search-overlay');
     const resultsCont = document.getElementById('search-results');
     if(q.length < 2) { overlay.style.display = 'none'; return; }
-    
     overlay.style.display = 'flex';
     let html = "";
     const query = q.toLowerCase();
 
-    // Busca em Pesquisadores
     const resHits = DATA.researchers.filter(r => r.name.toLowerCase().includes(query) || r.bio.toLowerCase().includes(query));
     if(resHits.length > 0) {
         html += `<div class="search-cat">Pesquisadores</div>`;
-        resHits.forEach(r => {
-            html += `<div class="search-item" onclick="openPanel('${r.id}'); closeSearch()">
-                <div class="title">${r.name}</div>
-                <div class="snippet">${highlight(r.bio, query)}</div>
-            </div>`;
-        });
+        resHits.forEach(r => html += `<div class="search-item" onclick="openPanel('${r.id}'); closeSearch()">
+            <div class="title">${r.name}</div><div class="snippet">${highlight(r.bio, query)}</div></div>`);
     }
 
-    // Busca em Transcrições (Insights)
-    const epHits = DATA.episodes.filter(e => e.body.toLowerCase().includes(query) || e.title.toLowerCase().includes(query));
+    const epHits = DATA.episodes.filter(e => e.body.toLowerCase().includes(query));
     if(epHits.length > 0) {
         html += `<div class="search-cat">Insights de Entrevistas</div>`;
-        epHits.forEach(e => {
-            html += `<div class="search-item" onclick="editEp(${e.id}); closeSearch()">
-                <div class="title">Ep ${e.id}: ${e.title}</div>
-                <div class="snippet">${highlight(e.body, query)}</div>
-            </div>`;
-        });
+        epHits.forEach(e => html += `<div class="search-item" onclick="editEp(${e.id}); closeSearch()">
+            <div class="title">Ep ${e.id}: ${e.title}</div><div class="snippet">${highlight(e.body, query)}</div></div>`);
     }
-
-    resultsCont.innerHTML = html || '<div style="padding:20px; color:#999">Nenhum insight encontrado.</div>';
+    resultsCont.innerHTML = html || '<div style="padding:20px; color:#999">Nenhum insight.</div>';
 }
 
 function highlight(text, q) {
     const idx = text.toLowerCase().indexOf(q);
     const start = Math.max(0, idx - 40);
     const end = Math.min(text.length, idx + 80);
-    const snippet = (start > 0 ? '...' : '') + text.substring(start, end) + '...';
-    return snippet.replace(new RegExp(q, 'gi'), m => `<mark>${m}</mark>`);
+    return '...' + text.substring(start, end).replace(new RegExp(q, 'gi'), m => `<mark>${m}</mark>`) + '...';
 }
 
 function closeSearch() { 
@@ -307,49 +280,34 @@ function closeSearch() {
     document.getElementById('global-search').value = "";
 }
 
-// --- EDITORIAL UI ---
 function openPanel(id) {
     const r = DATA.researchers.find(x => x.id === id);
     document.getElementById('panel-head').innerHTML = `<p class="uppercase">${r.org}</p><h2 class="serif" style="font-size:32px">${r.name}</h2>`;
-    document.getElementById('panel-body').innerHTML = `<p style="font-size:18px; line-height:1.8">${r.bio}</p><br><p class="uppercase">Publicações</p><p>${r.works}</p>`;
+    document.getElementById('panel-body').innerHTML = `<p style="font-size:18px">${r.bio}</p><br><p class="uppercase">Publicações</p><p>${r.works}</p>`;
     document.getElementById('side-panel').classList.add('open');
 }
 
 function closePanel() { document.getElementById('side-panel').classList.remove('open'); }
 
-// --- CMS EDITORS ---
 function renderResearcherList() {
     document.getElementById('res-list').innerHTML = DATA.researchers.map(r => `
         <div class="list-item" onclick="editRes('${r.id}')">
-            <p class="uppercase" style="color:#aaa">${r.country}</p>
-            <p style="font-weight:700">${r.name}</p>
-        </div>
-    `).join('');
+            <p class="uppercase" style="color:#aaa">${r.country}</p><p style="font-weight:700">${r.name}</p></div>`).join('');
 }
 
 function editRes(id) {
     const r = DATA.researchers.find(x => x.id === id);
     document.getElementById('res-editor').innerHTML = `
-        <h2 class="serif" style="margin-bottom:40px">Editar Perfil: ${r.name}</h2>
+        <h2 class="serif" style="margin-bottom:40px">Editar: ${r.name}</h2>
         <div class="field"><label>Nome</label><input type="text" value="${r.name}" onchange="update('researchers','${r.id}','name',this.value)"></div>
-        <div class="field"><label>Biografia Editorial</label><textarea rows="6" onchange="update('researchers','${r.id}','bio',this.value)">${r.bio}</textarea></div>
-        <div class="field"><label>Latitude/Longitude</label>
-            <div style="display:flex; gap:10px">
-                <input type="number" step="any" value="${r.lat}" onchange="update('researchers','${r.id}','lat',parseFloat(this.value))">
-                <input type="number" step="any" value="${r.lng}" onchange="update('researchers','${r.id}','lng',parseFloat(this.value))">
-            </div>
-        </div>
-        <button class="btn" onclick="save(); renderResearcherList(); updateMarkers();">Salvar Alterações</button>
-    `;
+        <div class="field"><label>Bio Editorial</label><textarea rows="6" onchange="update('researchers','${r.id}','bio',this.value)">${r.bio}</textarea></div>
+        <button class="btn" onclick="save(); renderResearcherList(); updateMarkers();">Salvar</button>`;
 }
 
 function renderEpisodeList() {
     document.getElementById('ep-list').innerHTML = DATA.episodes.map(e => `
         <div class="list-item" onclick="editEp(${e.id})">
-            <p class="uppercase" style="color:#aaa">Episódio ${e.id}</p>
-            <p style="font-weight:700">${e.title}</p>
-        </div>
-    `).join('');
+            <p class="uppercase" style="color:#aaa">Episódio ${e.id}</p><p style="font-weight:700">${e.title}</p></div>`).join('');
 }
 
 function editEp(id) {
@@ -357,18 +315,17 @@ function editEp(id) {
     switchPage('episodes', document.querySelectorAll('.nav-tab')[2]);
     document.getElementById('ep-editor').innerHTML = `
         <h2 class="serif" style="margin-bottom:40px">${e.title}</h2>
-        <div class="field"><label>Título do Episódio</label><input type="text" value="${e.title}" onchange="update('episodes',${id},'title',this.value)"></div>
-        <div class="field"><label>Transcrição (Diarização Manual)</label>
-            <p style="font-size:10px; color:#999; margin-bottom:10px">Use P: para Pergunta e R: para Resposta</p>
-            <textarea rows="15" class="serif" style="font-size:16px; line-height:1.8" onchange="update('episodes',${id},'body',this.value)">${e.body}</textarea>
-        </div>
-        <button class="btn" onclick="save(); renderEpisodeList();">Atualizar Episódio</button>
-    `;
+        <div class="field"><label>Transcrição (Use P: e R:)</label>
+            <textarea rows="15" class="serif" onchange="update('episodes',${id},'body',this.value)">${e.body}</textarea></div>
+        <button class="btn" onclick="save(); renderEpisodeList();">Atualizar</button>`;
 }
 
 function update(coll, id, field, val) {
     const item = DATA[coll].find(x => x.id === id);
-    if(item) item[field] = val;
+    if(item) {
+        if((field === 'lat' || field === 'lng') && isNaN(val)) return;
+        item[field] = val;
+    }
 }
 
 function switchPage(pageId, el) {
