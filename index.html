@@ -1,347 +1,288 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Content Moderation CMS · Digilabour</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <style>
-        :root {
-            --bg: #ffffff;
-            --surface: #fdfdfd;
-            --surface-alt: #f1f1f1;
-            --text-main: #1a1a1a;
-            --text-muted: #666666;
-            --accent: #000000;
-            --border: #e5e5e5;
-            --highlight: #fff2ac;
-            --nav: 70px;
-            --panel: 480px;
-            --serif: Georgia, "Times New Roman", serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Moderation Lab · luquizis</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{
+  --bg:#fdfdfd;--surface:#fff;--border:#e0e0e0;--text:#1a1a1a;--muted:#666;--accent:#000;
+  --t-w:#854f0b;--t-g:#1a3a5c;--t-a:#0a6b50;--t-s:#8c2e10;--t-j:#534ab7;
+  --panel:500px;--nav:64px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text);background:var(--bg);overflow:hidden}
+.serif{font-family:Georgia,serif;line-height:1.7}
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            color: var(--text-main); background: var(--bg); line-height: 1.6; overflow: hidden;
-        }
+/* ── TOP NAV ── */
+#topnav{height:var(--nav);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 32px;gap:24px;background:#fff;z-index:1000;position:relative}
+.brand{font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.nav-tabs{display:flex;gap:25px;margin-left:20px}
+.nav-tab{font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;text-transform:uppercase;border-bottom:2px solid transparent;padding:22px 0}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 
-        /* --- TYPOGRAPHY --- */
-        .serif { font-family: var(--serif); }
-        .uppercase { text-transform: uppercase; letter-spacing: 1px; font-size: 11px; font-weight: 700; }
+/* ── CONSTELAÇÃO / COMPARADOR ── */
+#comparison-panel{
+    position:fixed;bottom:20px;left:20px;z-index:1500;background:#fff;border:2px solid #000;
+    width:600px;max-height:80vh;display:none;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,0.2);
+}
+.comp-header{padding:15px;background:#000;color:#fff;display:flex;justify-content:space-between;align-items:center}
+.comp-body{padding:20px;overflow-y:auto;font-size:13px}
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 
-        /* --- TOP NAV --- */
-        #topnav {
-            height: var(--nav); border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; padding: 0 40px;
-            position: sticky; top: 0; z-index: 1000; background: #fff; gap: 40px;
-        }
-        .brand { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; flex-shrink: 0; cursor: pointer; }
-        
-        .nav-tabs { display: flex; gap: 30px; height: 100%; }
-        .nav-tab { 
-            display: flex; align-items: center; cursor: pointer; font-size: 12px; 
-            font-weight: 600; text-transform: uppercase; color: var(--text-muted);
-            border-bottom: 2px solid transparent; transition: 0.2s;
-        }
-        .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+/* ── MAP & LIST ── */
+.page{display:none;height:calc(100vh - var(--nav))}
+.page.active{display:flex}
+#map{flex:1;filter:grayscale(1) contrast(1.1)}
+.sidebar-list{width:320px;border-right:1px solid var(--border);overflow-y:auto}
+.list-item{padding:15px 20px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;align-items:center;gap:12px}
+.list-item:hover{background:#f9f9f9}
+.list-item.active{background:#f0f0f0;border-right:4px solid #000}
 
-        /* --- SEARCH BOX (LOOPPANEL STYLE) --- */
-        .search-container { position: relative; flex: 1; max-width: 400px; }
-        .search-input {
-            width: 100%; padding: 10px 16px 10px 36px; border: 1px solid var(--border);
-            border-radius: 4px; font-size: 13px; background: #f8f8f8; outline: none;
-        }
-        .search-input:focus { border-color: var(--accent); background: #fff; }
-        .search-icon { position: absolute; left: 12px; top: 11px; font-size: 14px; color: #999; }
+/* ── EDITORIAL SIDE PANEL ── */
+#side-panel{
+    width:var(--panel);height:100%;background:#fff;border-left:1px solid var(--border);
+    position:absolute;right:0;top:0;z-index:800;transform:translateX(100%);transition:0.4s;
+    display:flex;flex-direction:column;
+}
+#side-panel.open{transform:translateX(0)}
 
-        /* --- SEARCH RESULTS OVERLAY --- */
-        #search-overlay {
-            position: fixed; top: 75px; left: 50%; transform: translateX(-50%);
-            width: 600px; max-height: 500px; background: #fff; z-index: 2000;
-            border: 1px solid var(--accent); box-shadow: 0 30px 60px rgba(0,0,0,0.15);
-            display: none; flex-direction: column;
-        }
-        .search-body { overflow-y: auto; padding: 20px; }
-        .search-cat { font-size: 10px; color: #aaa; text-transform: uppercase; margin: 15px 0 8px; border-bottom: 1px solid #eee; }
-        .search-item { padding: 12px; cursor: pointer; border-radius: 4px; }
-        .search-item:hover { background: var(--surface-alt); }
-        .search-item .title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-        .search-item .snippet { font-size: 12px; color: var(--text-muted); font-family: var(--serif); }
-        mark { background: var(--highlight); color: inherit; }
+/* ── FORMS (ORCID METADATA) ── */
+.edit-area{flex:1;padding:40px;overflow-y:auto;background:#f9f9f9}
+.orcid-section{background:#fff;padding:20px;border:1px solid var(--border);margin-bottom:20px}
+.section-title{font-size:11px;font-weight:800;text-transform:uppercase;margin-bottom:15px;color:#aaa;border-bottom:1px solid #eee;padding-bottom:5px}
+.field-group{margin-bottom:15px}
+label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;margin-bottom:5px;color:#888}
+input, textarea, select{width:100%;padding:10px;border:1px solid #ddd;font-size:13px}
 
-        /* --- LAYOUT PAGES --- */
-        .page { display: none; height: calc(100vh - var(--nav)); }
-        .page.active { display: flex; }
+.btn{padding:10px 18px;font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer;border:1px solid #000}
+.btn-black{background:#000;color:#fff}
+.btn-red{border-color:#c00;color:#c00}
 
-        /* --- MAP & SIDEBAR --- */
-        #map { flex: 1; filter: grayscale(0.1) contrast(1.1); }
-        .map-legend {
-            position: absolute; top: 25px; left: 25px; z-index: 500;
-            background: #fff; padding: 20px; border: 1px solid var(--accent); width: 260px;
-        }
-        .legend-item { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 12px; cursor: pointer; }
-        .legend-item.inactive { opacity: 0.3; text-decoration: line-through; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-
-        /* --- SIDE PANEL --- */
-        #side-panel {
-            width: var(--panel); background: #fff; border-left: 1px solid var(--border);
-            transform: translateX(100%); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex; flex-direction: column; z-index: 800;
-        }
-        #side-panel.open { transform: translateX(0); }
-        .panel-header { padding: 50px 40px 20px; }
-        .panel-content { padding: 0 40px 40px; overflow-y: auto; flex: 1; }
-
-        /* --- CMS LISTS --- */
-        .sidebar-list { width: 350px; border-right: 1px solid var(--border); overflow-y: auto; background: #fff; }
-        .list-item { padding: 24px 30px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
-        .list-item:hover { background: var(--surface-alt); }
-        .list-item.active { border-left: 4px solid var(--accent); background: var(--surface-alt); }
-        .editor-area { flex: 1; padding: 60px 80px; overflow-y: auto; background: #fff; }
-
-        /* --- FORMS --- */
-        .field { margin-bottom: 25px; }
-        label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: #888; }
-        input, textarea, select { 
-            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 2px; 
-            font-family: inherit; font-size: 14px; background: #fafafa;
-        }
-        .btn { 
-            background: #000; color: #fff; padding: 12px 24px; border: none; 
-            font-size: 11px; font-weight: 700; text-transform: uppercase; cursor: pointer; 
-        }
-        .toast {
-            position: fixed; bottom: 30px; right: 30px; background: #000; color: #fff;
-            padding: 15px 25px; font-size: 12px; z-index: 3000; display: none;
-        }
-    </style>
+.marker-cluster{width:40px;height:40px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.2);overflow:hidden}
+</style>
 </head>
 <body>
 
 <div id="topnav">
-    <div class="brand" onclick="location.reload()">Digilabour</div>
-    <div class="search-container">
-        <span class="search-icon">🔍</span>
-        <input type="text" class="search-input" id="global-search" placeholder="Buscar insights ou entrevistas..." oninput="deepSearch(this.value)">
-    </div>
-    <div class="nav-tabs">
-        <div class="nav-tab active" onclick="switchPage('map', this)">Mapa</div>
-        <div class="nav-tab" onclick="switchPage('list', this)">Pesquisadores</div>
-        <div class="nav-tab" onclick="switchPage('episodes', this)">Episódios</div>
-    </div>
-    <button class="btn" onclick="exportData()" style="margin-left:auto; background:none; color:#000; border:1px solid #000">Exportar JSON</button>
+  <div class="brand">Content Moderation <span>CMS</span></div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="switchPage('map',this)">Mapa & Constelação</div>
+    <div class="nav-tab" onclick="switchPage('list',this)">Gestão de Pesquisadores</div>
+  </div>
+  <div style="margin-left:auto; display:flex; gap:10px">
+      <button class="btn" onclick="addNewResearcher()">+ Novo Pesquisador</button>
+      <button class="btn btn-black" onclick="saveAll()">Salvar Global</button>
+  </div>
 </div>
 
-<div id="search-overlay"><div class="search-body" id="search-results"></div></div>
-
 <div class="page active" id="page-map">
-    <div id="map"></div>
-    <div class="map-legend">
-        <p class="uppercase" style="margin-bottom:15px">Eixos Temáticos</p>
-        <div id="legend-content"></div>
-    </div>
-    <div id="side-panel">
-        <div class="panel-header">
-            <span style="float:right; cursor:pointer; font-size:24px" onclick="closePanel()">×</span>
-            <div id="panel-head"></div>
-        </div>
-        <div class="panel-content serif" id="panel-body"></div>
-    </div>
+  <div id="map"></div>
+  <div id="comparison-panel">
+      <div class="comp-header">
+          <span>Constelação: Comparativo de Abordagens</span>
+          <span style="cursor:pointer" onclick="closeComparison()">×</span>
+      </div>
+      <div class="comp-body" id="comp-body"></div>
+  </div>
+  <div id="side-panel">
+      <div style="padding:40px" id="panel-content"></div>
+  </div>
 </div>
 
 <div class="page" id="page-list">
-    <div class="sidebar-list" id="res-list"></div>
-    <div class="editor-area" id="res-editor">
-        <div class="serif" style="font-size:24px; color:#ccc">Selecione para editar perfil</div>
-    </div>
+  <div class="sidebar-list" id="res-list"></div>
+  <div class="edit-area" id="res-editor">
+      <div class="serif" style="text-align:center; padding-top:100px; color:#ccc">Selecione para editar metadados ORCID</div>
+  </div>
 </div>
-
-<div class="page" id="page-episodes">
-    <div class="sidebar-list" id="ep-list"></div>
-    <div class="editor-area" id="ep-editor">
-        <div class="serif" style="font-size:24px; color:#ccc">Selecione para editar episódio</div>
-    </div>
-</div>
-
-<div id="toast-msg" class="toast">Alterações salvas localmente.</div>
 
 <script>
-const THEMES = {
-    w: { label: 'Trabalho & Saúde', color: '#000' },
-    g: { label: 'Governança Digital', color: '#666' },
-    a: { label: 'Vieses Algorítmicos', color: '#999' },
-    s: { label: 'Sul Global', color: '#ccc' },
-    j: { label: 'Jornalismo', color: '#444' }
-};
-
-let DATA = { researchers: [], episodes: [] };
+// --- DATA E CONFIG ---
+const TAG_LABELS={w:'Trabalho',g:'Governança',a:'Algoritmos',s:'Sul Global',j:'Jornalismo'};
+let DATA = { researchers: [] };
+let selectedForComparison = new Set();
 let map, markers = {};
-let activeFilters = new Set(Object.keys(THEMES));
 
-function init() {
-    loadStorage();
-    initMap();
-    renderLegend();
-    renderResearcherList();
-    renderEpisodeList();
+// --- LOAD DATA ---
+function loadData(){
+    const s = localStorage.getItem('digilabour_orcid_db');
+    if(s) DATA = JSON.parse(s);
+    else DATA.researchers = [
+        {id:'1', name:'Sarah T. Roberts', orcid:'0000-0003-2415-397X', org:'UCLA', lat:34.05, lng:-118.24, bio:'Digital labor specialist.', employment:'Associate Professor at UCLA', education:'PhD at University of Illinois', tags:['w','s']},
+        {id:'2', name:'Rafael Zanatta', orcid:'0000-0002-3682-1549', org:'Data Privacy Brasil', lat:-23.56, lng:-46.64, bio:'Law and technology specialist.', employment:'Director at Data Privacy Brasil', education:'PhD at USP', tags:['g','s']}
+    ];
 }
 
-function loadStorage() {
-    const saved = localStorage.getItem('digilabour_final_db');
-    if(saved) DATA = JSON.parse(saved);
-    else {
-        DATA.researchers = [
-            { id: 'sarah', name: 'Sarah T. Roberts', org: 'UCLA', country: 'EUA', lat: 34.05, lng: -118.24, tags: ['w','s'], bio: 'Criadora do conceito de moderação comercial de conteúdo.', works: 'Behind the Screen (2019)' },
-            { id: 'tarleton', name: 'Tarleton Gillespie', org: 'Microsoft Research', country: 'EUA', lat: 42.36, lng: -71.10, tags: ['g','a'], bio: 'Autor de Custodians of the Internet.', works: 'The Politics of Platforms' }
-        ];
-        DATA.episodes = [
-            { id: 1, title: 'O Trabalho Invisível', researchers: ['sarah'], body: 'P: O que é moderação?\nR: É o trabalho que sustenta as redes.', status: 'published' }
-        ];
+function saveAll(){
+    localStorage.setItem('digilabour_orcid_db', JSON.stringify(DATA));
+    alert("Dados salvos!");
+    renderMapMarkers();
+}
+
+// --- ORCID CRUD ---
+function addNewResearcher(){
+    const id = Date.now().toString();
+    const newRes = {
+        id, name: 'Novo Pesquisador', orcid:'', org:'', lat:0, lng:0,
+        bio:'', employment:'', education:'', tags:[]
+    };
+    DATA.researchers.push(newRes);
+    switchPage('list', document.querySelectorAll('.nav-tab')[1]);
+    renderResearcherList();
+    editResearcher(id);
+}
+
+function deleteResearcher(id){
+    if(confirm("Deseja remover este pesquisador?")){
+        DATA.researchers = DATA.researchers.filter(r => r.id !== id);
+        saveAll();
+        renderResearcherList();
+        document.getElementById('res-editor').innerHTML = '';
     }
 }
 
-function save() {
-    localStorage.setItem('digilabour_final_db', JSON.stringify(DATA));
-    const t = document.getElementById('toast-msg');
-    t.style.display = 'block';
-    setTimeout(() => t.style.display = 'none', 2000);
-}
-
-function initMap() {
-    map = L.map('map', { center: [20, 0], zoom: 3, zoomControl: false });
+// --- MAP & CONSTELLATION ---
+function initMap(){
+    map = L.map('map', {center:[10,0], zoom:2, zoomControl:false});
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
-    updateMarkers();
+    renderMapMarkers();
 }
 
-function renderLegend() {
-    const cont = document.getElementById('legend-content');
-    cont.innerHTML = Object.entries(THEMES).map(([k, v]) => `
-        <div class="legend-item" id="leg-${k}" onclick="toggleFilter('${k}')">
-            <div class="dot" style="background:${v.color}"></div>
-            <span>${v.label}</span>
-        </div>
-    `).join('');
-}
-
-function toggleFilter(tag) {
-    if(activeFilters.has(tag)) activeFilters.delete(tag);
-    else activeFilters.add(tag);
-    document.getElementById(`leg-${tag}`).classList.toggle('inactive');
-    updateMarkers();
-}
-
-function updateMarkers() {
+function renderMapMarkers(){
     Object.values(markers).forEach(m => map.removeLayer(m));
     DATA.researchers.forEach(r => {
-        if(!r.tags.some(t => activeFilters.has(t))) return;
-        const m = L.circleMarker([r.lat, r.lng], {
-            radius: 6, color: '#fff', weight: 2, fillOpacity: 1, fillColor: '#000'
-        }).addTo(map).on('click', () => openPanel(r.id));
+        const icon = L.divIcon({
+            className: 'marker-cluster',
+            html: `<div style="background:#000; width:100%; height:100%; color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold">${r.name[0]}</div>`
+        });
+        const m = L.marker([r.lat, r.lng], {icon}).addTo(map)
+            .on('click', (e) => {
+                if(e.originalEvent.shiftKey) {
+                    toggleComparison(r.id);
+                } else {
+                    openProfile(r.id);
+                }
+            });
         markers[r.id] = m;
     });
 }
 
-function deepSearch(q) {
-    const overlay = document.getElementById('search-overlay');
-    const resultsCont = document.getElementById('search-results');
-    if(q.length < 2) { overlay.style.display = 'none'; return; }
-    overlay.style.display = 'flex';
-    let html = "";
-    const query = q.toLowerCase();
-
-    const resHits = DATA.researchers.filter(r => r.name.toLowerCase().includes(query) || r.bio.toLowerCase().includes(query));
-    if(resHits.length > 0) {
-        html += `<div class="search-cat">Pesquisadores</div>`;
-        resHits.forEach(r => html += `<div class="search-item" onclick="openPanel('${r.id}'); closeSearch()">
-            <div class="title">${r.name}</div><div class="snippet">${highlight(r.bio, query)}</div></div>`);
-    }
-
-    const epHits = DATA.episodes.filter(e => e.body.toLowerCase().includes(query));
-    if(epHits.length > 0) {
-        html += `<div class="search-cat">Insights de Entrevistas</div>`;
-        epHits.forEach(e => html += `<div class="search-item" onclick="editEp(${e.id}); closeSearch()">
-            <div class="title">Ep ${e.id}: ${e.title}</div><div class="snippet">${highlight(e.body, query)}</div></div>`);
-    }
-    resultsCont.innerHTML = html || '<div style="padding:20px; color:#999">Nenhum insight.</div>';
+function toggleComparison(id){
+    if(selectedForComparison.has(id)) selectedForComparison.delete(id);
+    else selectedForComparison.add(id);
+    
+    if(selectedForComparison.size >= 2) renderConstellation();
+    else document.getElementById('comparison-panel').style.display = 'none';
 }
 
-function highlight(text, q) {
-    const idx = text.toLowerCase().indexOf(q);
-    const start = Math.max(0, idx - 40);
-    const end = Math.min(text.length, idx + 80);
-    return '...' + text.substring(start, end).replace(new RegExp(q, 'gi'), m => `<mark>${m}</mark>`) + '...';
+function renderConstellation(){
+    const panel = document.getElementById('comparison-panel');
+    const body = document.getElementById('comp-body');
+    panel.style.display = 'flex';
+    
+    const items = Array.from(selectedForComparison).map(id => DATA.researchers.find(r => r.id === id));
+    
+    // Lógica de Constelação: Encontrar Interseções
+    const commonTags = items[0].tags.filter(t => items.every(it => it.tags.includes(t)));
+    
+    let html = `<div style="margin-bottom:20px"><strong>Temas Convergentes:</strong> ${commonTags.map(t => TAG_LABELS[t]).join(', ') || 'Sem interseção direta'}</div>`;
+    html += `<div class="comp-grid">`;
+    
+    items.forEach(it => {
+        html += `
+            <div style="border-left:2px solid #000; padding-left:15px">
+                <div class="uppercase" style="font-size:10px; color:#999">${it.org}</div>
+                <div style="font-weight:800; margin-bottom:10px">${it.name}</div>
+                <div class="serif" style="font-size:12px"><strong>Abordagem:</strong> ${it.bio.substring(0,100)}...</div>
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    body.innerHTML = html;
 }
 
-function closeSearch() { 
-    document.getElementById('search-overlay').style.display = 'none'; 
-    document.getElementById('global-search').value = "";
+function closeComparison(){
+    selectedForComparison.clear();
+    document.getElementById('comparison-panel').style.display = 'none';
 }
 
-function openPanel(id) {
+// --- EDITORIAL UI ---
+function renderResearcherList(){
+    const list = document.getElementById('res-list');
+    list.innerHTML = DATA.researchers.map(r => `
+        <div class="list-item" onclick="editResearcher('${r.id}')">
+            <div style="font-weight:700">${r.name}</div>
+        </div>
+    `).join('');
+}
+
+function editResearcher(id){
     const r = DATA.researchers.find(x => x.id === id);
-    document.getElementById('panel-head').innerHTML = `<p class="uppercase">${r.org}</p><h2 class="serif" style="font-size:32px">${r.name}</h2>`;
-    document.getElementById('panel-body').innerHTML = `<p style="font-size:18px">${r.bio}</p><br><p class="uppercase">Publicações</p><p>${r.works}</p>`;
-    document.getElementById('side-panel').classList.add('open');
+    const editor = document.getElementById('res-editor');
+    editor.innerHTML = `
+        <div class="orcid-section">
+            <div class="section-title">ORCID iD & Identificação</div>
+            <div class="field-group"><label>Nome Completo</label><input type="text" value="${r.name}" onchange="updateVal('${id}','name',this.value)"></div>
+            <div class="field-group"><label>ORCID iD</label><input type="text" value="${r.orcid}" placeholder="0000-0000-0000-0000" onchange="updateVal('${id}','orcid',this.value)"></div>
+            <div class="field-group"><label>Organização Atual</label><input type="text" value="${r.org}" onchange="updateVal('${id}','org',this.value)"></div>
+        </div>
+        
+        <div class="orcid-section">
+            <div class="section-title">Biography (Moderação de Conteúdo)</div>
+            <div class="field-group"><label>Resumo da Abordagem</label><textarea rows="4" onchange="updateVal('${id}','bio',this.value)">${r.bio}</textarea></div>
+            <div class="field-group"><label>Temas (Eixos)</label>
+                <div style="display:flex; gap:10px; flex-wrap:wrap">
+                    ${Object.entries(TAG_LABELS).map(([k,v]) => `
+                        <label style="font-size:9px"><input type="checkbox" ${r.tags.includes(k)?'checked':''} onchange="toggleTag('${id}','${k}')"> ${v}</label>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+
+        <div class="orcid-section">
+            <div class="section-title">Employment & Education (ORCID Standard)</div>
+            <div class="field-group"><label>Employment History</label><textarea onchange="updateVal('${id}','employment',this.value)">${r.employment}</textarea></div>
+            <div class="field-group"><label>Education</label><textarea onchange="updateVal('${id}','education',this.value)">${r.education}</textarea></div>
+        </div>
+
+        <div class="orcid-section" style="border-color:#ffcccc">
+            <div class="section-title" style="color:#c00">Coordenadas Geográficas</div>
+            <div style="display:flex; gap:10px">
+                <input type="number" step="any" value="${r.lat}" placeholder="Lat" onchange="updateVal('${id}','lat',parseFloat(this.value))">
+                <input type="number" step="any" value="${r.lng}" placeholder="Lng" onchange="updateVal('${id}','lng',parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <button class="btn btn-red" onclick="deleteResearcher('${id}')">Excluir Pesquisador</button>
+    `;
 }
 
-function closePanel() { document.getElementById('side-panel').classList.remove('open'); }
-
-function renderResearcherList() {
-    document.getElementById('res-list').innerHTML = DATA.researchers.map(r => `
-        <div class="list-item" onclick="editRes('${r.id}')">
-            <p class="uppercase" style="color:#aaa">${r.country}</p><p style="font-weight:700">${r.name}</p></div>`).join('');
-}
-
-function editRes(id) {
+function updateVal(id, field, val){
     const r = DATA.researchers.find(x => x.id === id);
-    document.getElementById('res-editor').innerHTML = `
-        <h2 class="serif" style="margin-bottom:40px">Editar: ${r.name}</h2>
-        <div class="field"><label>Nome</label><input type="text" value="${r.name}" onchange="update('researchers','${r.id}','name',this.value)"></div>
-        <div class="field"><label>Bio Editorial</label><textarea rows="6" onchange="update('researchers','${r.id}','bio',this.value)">${r.bio}</textarea></div>
-        <button class="btn" onclick="save(); renderResearcherList(); updateMarkers();">Salvar</button>`;
+    if(r) r[field] = val;
+    saveAll();
 }
 
-function renderEpisodeList() {
-    document.getElementById('ep-list').innerHTML = DATA.episodes.map(e => `
-        <div class="list-item" onclick="editEp(${e.id})">
-            <p class="uppercase" style="color:#aaa">Episódio ${e.id}</p><p style="font-weight:700">${e.title}</p></div>`).join('');
+function toggleTag(id, tag){
+    const r = DATA.researchers.find(x => x.id === id);
+    if(r.tags.includes(tag)) r.tags = r.tags.filter(t => t !== tag);
+    else r.tags.push(tag);
+    saveAll();
 }
 
-function editEp(id) {
-    const e = DATA.episodes.find(x => x.id === id);
-    switchPage('episodes', document.querySelectorAll('.nav-tab')[2]);
-    document.getElementById('ep-editor').innerHTML = `
-        <h2 class="serif" style="margin-bottom:40px">${e.title}</h2>
-        <div class="field"><label>Transcrição (Use P: e R:)</label>
-            <textarea rows="15" class="serif" onchange="update('episodes',${id},'body',this.value)">${e.body}</textarea></div>
-        <button class="btn" onclick="save(); renderEpisodeList();">Atualizar</button>`;
-}
-
-function update(coll, id, field, val) {
-    const item = DATA[coll].find(x => x.id === id);
-    if(item) {
-        if((field === 'lat' || field === 'lng') && isNaN(val)) return;
-        item[field] = val;
-    }
-}
-
-function switchPage(pageId, el) {
+function switchPage(id, el){
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('page-'+pageId).classList.add('active');
+    document.getElementById(`page-${id}`).classList.add('active');
     el.classList.add('active');
-    if(pageId === 'map') map.invalidateSize();
+    if(id === 'map') map.invalidateSize();
 }
 
-function exportData() {
-    const blob = new Blob([JSON.stringify(DATA, null, 2)], {type : 'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'digilabour-backup.json'; a.click();
-}
-
-window.onload = init;
+window.onload = () => { loadData(); initMap(); renderResearcherList(); };
 </script>
 </body>
 </html>
