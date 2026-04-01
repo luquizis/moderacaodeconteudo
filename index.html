@@ -2027,15 +2027,39 @@ async function sbReload(table){
   }catch(e){ sbSyncStatus('err','Erro realtime: '+e.message); }
 }
 
-async function sbForceSync(){ await sbLoad(); if(_pg==='dash')rdash();if(_pg==='people')rpg();if(_pg==='episodes')repg();rmk();ub(); }
+async function sbForceSync(){
+  if(!_SBmode || !_SBC){
+    // Try to reconnect
+    sbSyncStatus('saving','Reconectando…');
+    await startApp();
+    return;
+  }
+  sbSyncStatus('saving','Sincronizando…');
+  await sbLoad();
+  if(_pg==='dash')rdash();
+  if(_pg==='people')rpg();
+  if(_pg==='episodes')repg();
+  if(_pg==='dossier')rdl();
+  if(_pg==='interview')ril();
+  if(_pg==='blog')rbl();
+  rmk();ub();
+}
 
 function sbSyncStatus(type, msg){
   const dot=document.getElementById('sync-dot');
   const span=document.getElementById('sync-msg');
+  const bar=document.getElementById('sync-bar');
   if(!dot||!span)return;
   dot.className='sync-dot'+(type==='ok'?' pulse':type==='err'?' err':' saving');
   span.textContent=msg;
   if(_SBlast) document.getElementById('sync-time').textContent=_SBlast.toLocaleTimeString('pt-BR');
+  // Always show bar when there's relevant status
+  if(bar && !bar.classList.contains('show')) bar.classList.add('show');
+  // Flash bar background red on error
+  if(bar){
+    bar.style.background = type==='err' ? '#7a1c1c' : type==='saving' ? '#3a3020' : '';
+    if(type==='ok') setTimeout(()=>{ if(bar) bar.style.background=''; }, 2000);
+  }
 }
 
 // ── Upsert helpers ──
@@ -2086,75 +2110,107 @@ async function sbDeleteCode(id){
 }
 
 // ── Override S.save to also write to Supabase ──
-// We patch S._p to also trigger Supabase writes
-const _origSave = S._p.bind(S);
+// Replace _p directly on the object so this._p() calls work
 S._p = async function(){
-  _origSave(); // always save to localStorage
-  if(!_SBmode||!_SBC)return;
-  // Write all dirty records — simple full sync approach
-  // For a production app you'd track dirty records individually,
-  // but for a research team this is fine
-  sbSyncStatus('saving','Sincronizando…');
+  // 1. Always save to localStorage first
   try{
-    // People
-    if(S.data.people.length>0){
-      await _SBC.from('cm_people').upsert(S.data.people.map(sbPersonToRow),{onConflict:'id'});
+    const j=JSON.stringify(this.data);
+    if(j.length>4e6) toast('Atenção: dados próximos do limite de 5MB','warn');
+    localStorage.setItem('cm_ai_v3', j); // match SK constant
+    this.dirty=false;
+    const f=document.getElementById('sf');
+    if(f){f.classList.add('on');setTimeout(()=>f.classList.remove('on'),1800);}
+  }catch(e){ toast('Erro localStorage: '+e.message,'error'); }
+
+  // 2. Write to Supabase if connected
+  if(!_SBmode || !_SBC){
+    sbSyncStatus('err','⚠ Não conectado ao Supabase — dados apenas locais');
+    return;
+  }
+  sbSyncStatus('saving','Sincronizando com Supabase…');
+  try{
+    const results = await Promise.allSettled([
+      S.data.people.length>0
+        ? _SBC.from('cm_people').upsert(S.data.people.map(sbPersonToRow),{onConflict:'id'})
+        : Promise.resolve({error:null}),
+      S.data.episodes.length>0
+        ? _SBC.from('cm_episodes').upsert(S.data.episodes.map(sbEpisodeToRow),{onConflict:'id'})
+        : Promise.resolve({error:null}),
+      S.data.codes.length>0
+        ? _SBC.from('cm_codes').upsert(S.data.codes.map(c=>({id:c.id,name:c.name,color:c.color,definition:c.definition})),{onConflict:'id'})
+        : Promise.resolve({error:null}),
+      S.data.interviews.length>0
+        ? _SBC.from('cm_interviews').upsert(
+            S.data.interviews.map(i=>({id:i.id,person_id:i.personId||null,date:i.date||null,time:i.time||null,medium:i.medium||'',status:i.status||'planejada',consent:i.consent||'pendente',data:i})),
+            {onConflict:'id'}
+          )
+        : Promise.resolve({error:null}),
+    ]);
+
+    // Check for errors in any of the writes
+    const errors = results
+      .filter(r=>r.status==='fulfilled' && r.value?.error)
+      .map(r=>r.value.error.message);
+
+    if(errors.length>0){
+      const msg = errors[0];
+      sbSyncStatus('err','Erro Supabase: '+msg);
+      toast('Erro ao salvar no Supabase: '+msg, 'error');
+    } else {
+      _SBlast=new Date();
+      sbSyncStatus('ok','✓ Salvo no Supabase · '+_SBlast.toLocaleTimeString('pt-BR'));
     }
-    // Episodes
-    if(S.data.episodes.length>0){
-      await _SBC.from('cm_episodes').upsert(S.data.episodes.map(sbEpisodeToRow),{onConflict:'id'});
-    }
-    // Interviews
-    if(S.data.interviews.length>0){
-      const rows=S.data.interviews.map(i=>({id:i.id,person_id:i.personId,date:i.date||null,time:i.time||null,medium:i.medium||'',status:i.status||'planejada',consent:i.consent||'pendente',data:i}));
-      await _SBC.from('cm_interviews').upsert(rows,{onConflict:'id'});
-    }
-    // Codes
-    if(S.data.codes.length>0){
-      await _SBC.from('cm_codes').upsert(S.data.codes.map(c=>({id:c.id,name:c.name,color:c.color,definition:c.definition})),{onConflict:'id'});
-    }
-    _SBlast=new Date();
-    sbSyncStatus('ok','Salvo · '+_SBlast.toLocaleTimeString('pt-BR'));
   }catch(e){
-    sbSyncStatus('err','Erro ao sincronizar: '+e.message);
+    sbSyncStatus('err','Erro: '+e.message);
     toast('Erro Supabase: '+e.message,'error');
   }
 };
 
 // ── Startup ──
 async function startApp(){
-  S.load(); // always load localStorage first (fast)
-  const creds=sbCredsGet();
-  if(creds){
-    // Hide config screen immediately — creds available (fixed or saved)
-    document.getElementById('sb-screen').style.display='none';
-    // If fixed creds, skip showing the form fields
-    if(SB_URL_FIXED && SB_KEY_FIXED){
-      // silent auto-connect, no form needed
-    } else {
-      document.getElementById('sb-url').value=creds.url;
-      document.getElementById('sb-key').value=creds.key;
-    }
-    try{
-      const clientOptions = creds.key.startsWith('sb_publishable_')
-        ? { auth:{persistSession:true}, global:{headers:{'Authorization':`Bearer ${creds.key}`,'apikey':creds.key}} }
-        : {};
-      _SBC=supabase.createClient(creds.url, creds.key, clientOptions);
-      _SBmode=true;
-      await sbLoad();
-      sbStartRealtime();
-      document.getElementById('sync-bar').classList.add('show');
-      sbSyncStatus('ok','Conectado · '+new Date().toLocaleTimeString('pt-BR'));
-    }catch(e){
-      _SBC=null;_SBmode=false;
-      // If fixed creds failed, show a toast but continue in local mode
-      toast('Falha ao conectar ao Supabase — modo local ativado','warn');
-    }
-    init();
-  }else{
-    // No creds anywhere — show config screen
+  S.load();
+  const creds = sbCredsGet();
+
+  // Always show sync bar
+  document.getElementById('sync-bar').classList.add('show');
+
+  if(!creds){
     document.getElementById('sb-screen').style.display='flex';
+    sbSyncStatus('err','Sem credenciais');
+    return;
   }
+
+  document.getElementById('sb-screen').style.display='none';
+  sbSyncStatus('saving','Conectando…');
+
+  try{
+    const key = creds.key;
+    // Supabase JS v2 with publishable key needs apikey in headers
+    const clientOptions = {
+      auth: { persistSession: true, autoRefreshToken: true },
+      global: { headers: { 'apikey': key, 'Authorization': 'Bearer ' + key } }
+    };
+    _SBC = supabase.createClient(creds.url, key, clientOptions);
+
+    // Test connection
+    const { error: testErr } = await _SBC.from('cm_people').select('id').limit(1);
+    if(testErr && !['PGRST116','42P01'].includes(testErr.code)){
+      throw new Error(testErr.message);
+    }
+
+    _SBmode = true;
+    await sbLoad();
+    sbStartRealtime();
+    sbSyncStatus('ok','✓ Conectado ao Supabase');
+
+  }catch(e){
+    _SBC = null;
+    _SBmode = false;
+    sbSyncStatus('err','Erro: ' + e.message + ' · Toque ↻ para tentar novamente');
+    console.error('[Supabase]', e);
+  }
+
+  init();
 }
 
 // ══════════════════════════════════════════════════
