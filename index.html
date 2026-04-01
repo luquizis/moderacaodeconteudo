@@ -1107,9 +1107,9 @@ function repg(){
     const c=ec(ep);
     const res=(ep.researchers||[]).map(r=>S.P(r)).filter(Boolean);
     const isOpen=_expandedEp===ep.id;
-    return`<div class="ep-edit-card" id="epc-${ep.id}" draggable="true"
-      ondragstart="dstart(event,${ep.id})" ondragover="dover(event,${ep.id})" ondragleave="dleave(event,${ep.id})" ondrop="ddrop(event,${ep.id})" ondragend="dend()">
-      <div class="ep-card-header" onclick="toggleEp(${ep.id})">
+    return`<div class="ep-edit-card" id="epc-${ep.id}" data-epid="${ep.id}" draggable="true"
+      ondragstart="dstart(event,this.dataset.epid)" ondragover="dover(event,this.dataset.epid)" ondragleave="dleave(event,this.dataset.epid)" ondrop="ddrop(event,this.dataset.epid)" ondragend="dend()">
+      <div class="ep-card-header" onclick="toggleEp(this.closest('.ep-edit-card').dataset.epid)">
         <span class="ep-drag-handle" title="Arraste para reordenar">⠿</span>
         <div class="ep-card-num" style="background:${c}18;color:${c}">${ep.order}</div>
         <div style="flex:1;min-width:0">
@@ -1118,38 +1118,38 @@ function repg(){
         </div>
         ${stChip(ep.status)}
         <div class="ep-card-actions" onclick="event.stopPropagation()">
-          <button class="btn btn-sm btn-ghost" onclick="openEpModal(${ep.id})">Editar</button>
-          <button class="btn btn-sm btn-danger" onclick="cde(${ep.id})">×</button>
+          <button class="btn btn-sm btn-ghost" onclick="openEpModal(this.closest('.ep-edit-card').dataset.epid)">Editar</button>
+          <button class="btn btn-sm btn-danger" onclick="cde(this.closest('.ep-edit-card').dataset.epid)">×</button>
           <span style="color:var(--faint);font-size:16px;line-height:1;cursor:pointer;transition:transform .2s;display:inline-block;transform:rotate(${isOpen?'180':'0'}deg)" id="arrow-${ep.id}">▾</span>
         </div>
       </div>
       ${isOpen?`<div class="ep-card-body">
         <div class="g3" style="margin-bottom:14px">
-          <div class="fg"><label class="fl">Título *</label><input class="fi" value="${san(ep.title||'')}" oninput="S.uE(${ep.id},'title',this.value)"></div>
-          <div class="fg"><label class="fl">Ângulo / tema</label><input class="fi" value="${san(ep.angle||'')}" oninput="S.uE(${ep.id},'angle',this.value)"></div>
-          <div class="fg"><label class="fl">Status</label><select class="fsel" onchange="S.uE(${ep.id},'status',this.value);repg()">${EST.map(v=>`<option value="${v}"${ep.status===v?' selected':''}>${san(EL[v])}</option>`).join('')}</select></div>
+          <div class="fg"><label class="fl">Título *</label><input class="fi" value="${san(ep.title||'')}" oninput="S.uE('${ep.id}','title',this.value)"></div>
+          <div class="fg"><label class="fl">Ângulo / tema</label><input class="fi" value="${san(ep.angle||'')}" oninput="S.uE('${ep.id}','angle',this.value)"></div>
+          <div class="fg"><label class="fl">Status</label><select class="fsel" onchange="S.uE('${ep.id}','status',this.value);repg()">${EST.map(v=>`<option value="${v}"${ep.status===v?' selected':''}>${san(EL[v])}</option>`).join('')}</select></div>
         </div>
         <div class="g3" style="margin-bottom:14px">
-          <div class="fg"><label class="fl">Mês</label><select class="fsel" onchange="S.uE(${ep.id},'month',this.value)">${MONTHS.map(m=>`<option${ep.month===m?' selected':''}>${m}</option>`).join('')}</select></div>
-          <div class="fg"><label class="fl">Ano</label><select class="fsel" onchange="S.uE(${ep.id},'year',parseInt(this.value))">${[2026,2027,2028].map(y=>`<option${ep.year===y?' selected':''}>${y}</option>`).join('')}</select></div>
+          <div class="fg"><label class="fl">Mês</label><select class="fsel" onchange="S.uE('${ep.id}','month',this.value)">${MONTHS.map(m=>`<option${ep.month===m?' selected':''}>${m}</option>`).join('')}</select></div>
+          <div class="fg"><label class="fl">Ano</label><select class="fsel" onchange="S.uE('${ep.id}','year',parseInt(this.value))">${[2026,2027,2028].map(y=>`<option${ep.year===y?' selected':''}>${y}</option>`).join('')}</select></div>
           <div class="fg"><label class="fl">Tags temáticas</label>
             <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">
-              ${Object.entries(TL).map(([k,v])=>`<span class="chip${(ep.tags||[]).includes(k)?' sel':''}" style="background:${(ep.tags||[]).includes(k)?TC[k]+'18':'var(--cream)'};color:${TC[k]}" onclick="toggleEpTag(${ep.id},'${k}')">${san(v.split('/')[0])}</span>`).join('')}
+              ${Object.entries(TL).map(([k,v])=>`<span class="chip${(ep.tags||[]).includes(k)?' sel':''}" style="background:${(ep.tags||[]).includes(k)?TC[k]+'18':'var(--cream)'};color:${TC[k]}" onclick="toggleEpTag('${ep.id}','${k}')">${san(v.split('/')[0])}</span>`).join('')}
             </div>
           </div>
         </div>
         <div class="fg" style="margin-bottom:14px">
           <label class="fl">Pesquisadores vinculados</label>
           <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
-            ${S.p.map(p=>`<span class="chip${(ep.researchers||[]).includes(p.id)?' sel':''}" style="background:${(ep.researchers||[]).includes(p.id)?abg(p.id)+'18':'var(--cream)'};color:${abg(p.id)}" onclick="toggleEpRes(${ep.id},'${san(p.id)}')">${san(p.name.split(' ')[0])}</span>`).join('')}
+            ${S.p.map(p=>`<span class="chip${(ep.researchers||[]).includes(p.id)?' sel':''}" style="background:${(ep.researchers||[]).includes(p.id)?abg(p.id)+'18':'var(--cream)'};color:${abg(p.id)}" onclick="toggleEpRes('${ep.id}','${san(p.id)}')">${san(p.name.split(' ')[0])}</span>`).join('')}
           </div>
         </div>
         <div class="fg">
           <label class="fl">Notas internas</label>
-          <textarea class="fta" rows="2" oninput="S.uE(${ep.id},'notes',this.value)">${san(ep.notes||'')}</textarea>
+          <textarea class="fta" rows="2" oninput="S.uE('${ep.id}','notes',this.value)">${san(ep.notes||'')}</textarea>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)">
-          <button class="btn btn-acc btn-sm" onclick="nav('blog',null);setTimeout(()=>obl(${ep.id}),80)">Ir ao editor de texto →</button>
+          <button class="btn btn-acc btn-sm" onclick="nav('blog',null);setTimeout(()=>obl('${ep.id}'),80)">Ir ao editor de texto →</button>
           <span style="font-size:11px;color:var(--faint);align-self:center">${(ep.questions||[]).length} perguntas · ${(ep.excerpts||[]).length} trechos · ${(ep.attachments||[]).length} anexos</span>
         </div>
       </div>`:''}
