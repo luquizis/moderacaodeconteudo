@@ -1500,6 +1500,14 @@ function cpb(epId){const e=S.E(epId);if(!e)return;const pub=e.published||{};cons
 // ══════════════════════════════════════════════════
 // SUPABASE LAYER
 // ══════════════════════════════════════════════════
+
+// ── COLE SUAS CREDENCIAIS AQUI ─────────────────────
+// Depois disso, qualquer pessoa que abrir o arquivo
+// conecta automaticamente, sem precisar configurar nada.
+const SB_URL_FIXED = '';   // ex: 'https://xxxx.supabase.co'
+const SB_KEY_FIXED = '';   // ex: 'sb_publishable_...'
+// ──────────────────────────────────────────────────
+
 const SB_KEY = 'cm_sb_creds';
 let _SBC = null;           // supabase client
 let _SBmode = false;      // true = supabase, false = localStorage only
@@ -1507,7 +1515,11 @@ let _SBch = null;   // realtime channel
 let _SBlast = null;
 
 // ── Credentials ──
-function sbCredsGet(){ try{ return JSON.parse(localStorage.getItem(SB_KEY)||'null'); }catch{return null;} }
+function sbCredsGet(){
+  // Se credenciais estão fixas no código, usa elas diretamente
+  if(SB_URL_FIXED && SB_KEY_FIXED) return {url:SB_URL_FIXED, key:SB_KEY_FIXED};
+  try{ return JSON.parse(localStorage.getItem(SB_KEY)||'null'); }catch{return null;}
+}
 function sbCredsSave(url,key){ localStorage.setItem(SB_KEY, JSON.stringify({url,key})); }
 function sbCredsClear(){ localStorage.removeItem(SB_KEY); }
 
@@ -1793,10 +1805,15 @@ async function startApp(){
   S.load(); // always load localStorage first (fast)
   const creds=sbCredsGet();
   if(creds){
-    // Auto-reconnect with saved creds
-    document.getElementById('sb-url').value=creds.url;
-    document.getElementById('sb-key').value=creds.key;
+    // Hide config screen immediately — creds available (fixed or saved)
     document.getElementById('sb-screen').style.display='none';
+    // If fixed creds, skip showing the form fields
+    if(SB_URL_FIXED && SB_KEY_FIXED){
+      // silent auto-connect, no form needed
+    } else {
+      document.getElementById('sb-url').value=creds.url;
+      document.getElementById('sb-key').value=creds.key;
+    }
     try{
       const clientOptions = creds.key.startsWith('sb_publishable_')
         ? { auth:{persistSession:true}, global:{headers:{'Authorization':`Bearer ${creds.key}`,'apikey':creds.key}} }
@@ -1806,14 +1823,15 @@ async function startApp(){
       await sbLoad();
       sbStartRealtime();
       document.getElementById('sync-bar').classList.add('show');
-      sbSyncStatus('ok','Reconectado · '+new Date().toLocaleTimeString('pt-BR'));
+      sbSyncStatus('ok','Conectado · '+new Date().toLocaleTimeString('pt-BR'));
     }catch(e){
       _SBC=null;_SBmode=false;
-      sbSyncStatus('err','Falha ao reconectar');
+      // If fixed creds failed, show a toast but continue in local mode
+      toast('Falha ao conectar ao Supabase — modo local ativado','warn');
     }
     init();
   }else{
-    // Show config screen
+    // No creds anywhere — show config screen
     document.getElementById('sb-screen').style.display='flex';
   }
 }
