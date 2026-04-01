@@ -517,9 +517,9 @@ html,body{height:100%;overflow:hidden;background:var(--cream);color:var(--ink);f
     <input class="sb-input" id="sb-url" placeholder="https://xxxxxxxxxxxx.supabase.co" autocomplete="off" spellcheck="false">
     <div class="sb-hint">Encontre em: <a href="https://supabase.com/dashboard" target="_blank">supabase.com/dashboard</a> → Settings → API → Project URL</div>
 
-    <label class="sb-label">Anon key (pública)</label>
-    <input class="sb-input" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." autocomplete="off" spellcheck="false">
-    <div class="sb-hint">Na mesma tela → Project API keys → <strong>anon · public</strong></div>
+    <label class="sb-label">Publishable key</label>
+    <input class="sb-input" id="sb-key" placeholder="sb_publishable_..." autocomplete="off" spellcheck="false">
+    <div class="sb-hint">Na mesma tela → <strong>Publishable key</strong> (começa com <code>sb_publishable_</code>). Também aceita a Legacy anon key (<code>eyJ...</code>). <strong>Não use a Secret key.</strong></div>
 
     <button class="sb-btn" id="sb-connect-btn" onclick="sbConnect()">Conectar e sincronizar</button>
     <div class="sb-err" id="sb-err"></div>
@@ -1520,17 +1520,29 @@ async function sbConnect(){
   err.style.display='none';
   if(!url||!key){ sbShowErr('Preencha os dois campos.'); return; }
   if(!url.startsWith('https://')){ sbShowErr('URL deve começar com https://'); return; }
+  // Accept both legacy anon key (eyJ...) and new publishable key (sb_publishable_...)
+  if(!key.startsWith('eyJ') && !key.startsWith('sb_publishable_')){
+    sbShowErr('Use a Publishable key (começa com sb_publishable_) ou a Legacy anon key (começa com eyJ). Não use a Secret key.');
+    return;
+  }
+  if(key.startsWith('sb_secret_')){
+    sbShowErr('Não use a Secret key — ela é apenas para servidores. Use a Publishable key.');
+    return;
+  }
   btn.disabled=true; btn.textContent='Conectando…';
   try{
-    _SBC = supabase.createClient(url, key);
-    // test connection — try to read from app_state table
-    const {error} = await _SBC.from('cm_state').select('id').limit(1);
-    if(error && error.code!=='PGRST116' && error.code!=='42P01'){
+    // For new publishable keys, pass as Authorization header format
+    const clientOptions = key.startsWith('sb_publishable_')
+      ? { auth: { persistSession: true }, global: { headers: { 'Authorization': `Bearer ${key}`, 'apikey': key } } }
+      : {};
+    _SBC = supabase.createClient(url, key, clientOptions);
+    // Test connection — read any table (ignore "table not found" errors)
+    const {error} = await _SBC.from('cm_people').select('id').limit(1);
+    if(error && error.code!=='PGRST116' && error.code!=='42P01' && !error.message?.includes('does not exist')){
       throw new Error(error.message);
     }
     sbCredsSave(url,key);
     _SBmode=true;
-    await sbEnsureTables();
     await sbLoad();
     sbStartRealtime();
     document.getElementById('sb-screen').style.display='none';
@@ -1540,7 +1552,7 @@ async function sbConnect(){
   }catch(e){
     _SBC=null; _SBmode=false;
     btn.disabled=false; btn.textContent='Conectar e sincronizar';
-    sbShowErr('Erro de conexão: '+e.message+'. Verifique a URL e a key, e se as tabelas existem (veja instruções).');
+    sbShowErr('Erro de conexão: '+e.message+'. Verifique se rodou o SQL de setup e se a URL está correta.');
   }
 }
 
@@ -1786,7 +1798,10 @@ async function startApp(){
     document.getElementById('sb-key').value=creds.key;
     document.getElementById('sb-screen').style.display='none';
     try{
-      _SBC=supabase.createClient(creds.url,creds.key);
+      const clientOptions = creds.key.startsWith('sb_publishable_')
+        ? { auth:{persistSession:true}, global:{headers:{'Authorization':`Bearer ${creds.key}`,'apikey':creds.key}} }
+        : {};
+      _SBC=supabase.createClient(creds.url, creds.key, clientOptions);
       _SBmode=true;
       await sbLoad();
       sbStartRealtime();
