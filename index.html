@@ -499,9 +499,329 @@ html,body{height:100%;overflow:hidden;background:var(--cream);color:var(--ink);f
 .sync-right{margin-left:auto;display:flex;align-items:center;gap:12px}
 .sync-btn{background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);border-radius:4px;font-size:10px;cursor:pointer;padding:2px 8px;font-family:var(--fm);transition:all .15s}
 .sync-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8)}
+
+/* ══════════════════════════════════════════════
+   MOBILE & RESPONSIVE — 768px and below
+   Strategy:
+   - Sidebar hidden, slides in as drawer
+   - Bottom nav bar (5 icons)
+   - All panels full-screen
+   - Grids → single column
+   - Touch targets min 44px
+   - Modals full-screen on mobile
+══════════════════════════════════════════════ */
+
+/* ── Mobile bottom nav bar ── */
+#mob-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  height:60px;
+  background:var(--ink);
+  border-top:1px solid rgba(255,255,255,.08);
+  z-index:200;
+  align-items:stretch;
+  justify-content:stretch;
+}
+.mob-nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;cursor:pointer;
+  background:none;border:none;color:rgba(255,255,255,.4);
+  font-family:var(--fb);font-size:9px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.5px;
+  transition:color .15s;padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.mob-nav-item svg{width:20px;height:20px;opacity:.5;transition:opacity .15s}
+.mob-nav-item.active{color:var(--terra)}
+.mob-nav-item.active svg{opacity:1}
+.mob-nav-item span{font-size:8px}
+
+/* ── Mobile drawer overlay ── */
+#mob-overlay{
+  display:none;position:fixed;inset:0;background:rgba(26,22,18,.6);
+  z-index:149;backdrop-filter:blur(2px);
+  opacity:0;transition:opacity .25s;
+}
+#mob-overlay.show{opacity:1}
+
+/* ── Hamburger button (top-left on mobile) ── */
+#mob-ham{
+  display:none;
+  position:fixed;top:10px;left:12px;z-index:210;
+  width:40px;height:40px;border-radius:var(--r);
+  background:var(--ink);border:none;cursor:pointer;
+  align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+}
+#mob-ham svg{width:18px;height:18px;color:rgba(255,255,255,.7)}
+
+/* ── "More" sheet for extra nav items ── */
+#mob-more{
+  display:none;position:fixed;bottom:60px;left:0;right:0;
+  background:var(--ink);border-top:1px solid rgba(255,255,255,.08);
+  z-index:201;transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);
+  padding:8px 0 4px;
+}
+#mob-more.open{transform:translateY(0)}
+.mob-more-item{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 20px;color:rgba(255,255,255,.55);
+  font-size:14px;font-weight:500;cursor:pointer;
+  background:none;border:none;width:100%;text-align:left;
+  font-family:var(--fb);-webkit-tap-highlight-color:transparent;
+}
+.mob-more-item svg{width:18px;height:18px;opacity:.6;flex-shrink:0}
+.mob-more-item.active{color:var(--terra)}
+.mob-more-item.active svg{opacity:1}
+
+@media (max-width:768px){
+
+  /* ── Core layout ── */
+  html,body{overflow:auto;height:auto;min-height:100%}
+  #shell{flex-direction:column;height:auto;min-height:100dvh;overflow:visible}
+
+  /* ── Sidebar becomes a slide-in drawer ── */
+  #sidebar{
+    position:fixed;top:0;left:0;bottom:0;
+    width:min(280px, 85vw);
+    transform:translateX(-100%);
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    z-index:150;
+    height:100dvh;
+  }
+  #sidebar.mob-open{transform:translateX(0)}
+
+  /* ── Main fills screen, leaves room for top header + bottom nav ── */
+  #main{
+    width:100%;min-height:100dvh;
+    padding-bottom:60px; /* bottom nav height */
+    overflow:visible;
+    display:block;
+  }
+
+  /* ── Topbar ── */
+  #topbar{
+    height:52px;padding:0 56px 0 16px;
+    position:sticky;top:0;z-index:100;
+    background:#fff;
+  }
+  .tb-title{font-size:15px}
+  .tb-sep,.tb-sub{display:none}
+  .tb-right .sf{display:none}
+  .tb-btn.acc{padding:7px 12px;font-size:12px}
+
+  /* ── Hamburger visible ── */
+  #mob-ham{display:flex}
+
+  /* ── Bottom nav visible ── */
+  #mob-nav{display:flex}
+
+  /* ── Sync bar above bottom nav ── */
+  #sync-bar{bottom:60px;font-size:10px;padding:0 12px}
+  #sync-bar .sync-right{gap:8px}
+  #sync-bar .sync-btn{padding:2px 6px;font-size:9px}
+
+  /* ── Pages: full width, scrollable ── */
+  .page{display:none;flex-direction:column;width:100%;min-height:calc(100dvh - 52px - 60px);overflow:visible}
+  .page.active{display:flex}
+
+  /* ── Dashboard ── */
+  #page-dash{overflow:visible;padding-bottom:0}
+  .dash-inner{padding:18px 16px}
+  .dash-title{font-size:26px}
+  .dash-sub{font-size:12px;margin-bottom:20px}
+  .metrics{grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+  .mc{padding:12px 10px}
+  .mc-icon{font-size:16px;margin-bottom:5px}
+  .mc-val{font-size:22px}
+  .mc-lbl{font-size:9px}
+  .mc-sub{display:none}
+  .dash-grid{grid-template-columns:1fr;gap:14px}
+  .dash-row3{grid-template-columns:1fr;gap:14px;margin-top:14px}
+
+  /* ── Sidebar list pattern (dossier, etc.) ── */
+  .sl-wrap{flex-direction:column;height:auto;min-height:calc(100dvh - 112px)}
+  .sl-panel{
+    width:100%;border-right:none;
+    border-bottom:1px solid var(--rule);
+    flex-shrink:0;
+  }
+  .sl-head{padding:12px 14px}
+  .sl-content{flex:1;overflow:visible}
+  .sl-inner{padding:16px 14px;max-width:100%}
+
+  /* ── Episode page ── */
+  #page-episodes>div:first-child{
+    padding:12px 14px;
+    flex-wrap:wrap;gap:8px;
+  }
+  #ep-grid{padding:12px 14px}
+  .ep-edit-card{margin-bottom:10px}
+  .ep-card-header{padding:12px 14px;gap:10px}
+  .ep-card-body{padding:12px 14px}
+  .ep-card-title-display{font-size:13px}
+  .g3,.g4{grid-template-columns:1fr 1fr;gap:10px}
+
+  /* ── People grid ── */
+  #page-people>div:first-child{
+    padding:12px 14px;flex-wrap:wrap;gap:8px;
+  }
+  #page-people>div:first-child .fi{max-width:100%}
+  #ppl-grid{padding:12px 14px}
+  .ppl-grid{grid-template-columns:1fr;gap:12px}
+  .pc{padding:14px}
+
+  /* ── Map ── */
+  #page-map{position:relative;height:calc(100dvh - 112px)}
+  .msl{
+    position:absolute;bottom:0;left:0;right:0;
+    width:100%;height:auto;max-height:45%;
+    border-right:none;border-top:1px solid var(--rule);
+    z-index:10;background:#fff;
+    border-radius:var(--r2x) var(--r2x) 0 0;
+    box-shadow:0 -4px 20px rgba(26,22,18,.12);
+  }
+  .msl-head{padding:10px 16px 8px;border-radius:var(--r2x) var(--r2x) 0 0}
+  .msl-head::before{
+    content:'';display:block;width:32px;height:3px;
+    background:var(--rule2);border-radius:10px;
+    margin:0 auto 10px;
+  }
+  #map{height:100%;width:100%}
+  #mpanel{width:100%;bottom:0;top:auto;height:80dvh;
+    transform:translateY(100%);
+    border-left:none;border-top:1px solid var(--rule);
+    border-radius:var(--r2x) var(--r2x) 0 0;
+  }
+  #mpanel.open{transform:translateY(0)}
+  #mpanel::before{
+    content:'';display:block;width:32px;height:3px;
+    background:var(--rule2);border-radius:10px;
+    margin:10px auto 0;
+  }
+
+  /* ── Interview / session ── */
+  #int-content{overflow:visible}
+  #int-content .g2{grid-template-columns:1fr;gap:10px}
+  .ep-hdr{padding:12px 14px;gap:10px}
+  .ep-tabs{padding:0 14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .ep-tab{padding:10px 14px;font-size:12px;white-space:nowrap}
+
+  /* ── Analysis ── */
+  #ana-content .sl-inner{padding:12px 14px}
+  #gsv{height:320px}
+  .mt{font-size:12px}
+  .mt th,.mt td{padding:8px}
+
+  /* ── Blog ── */
+  .blog-ed{min-height:280px;font-size:13px}
+
+  /* ── Dossier ── */
+  .dh{flex-wrap:wrap;padding:16px 14px;gap:14px}
+  .dh-ph{width:52px;height:52px;font-size:16px}
+  .dh-name{font-size:18px}
+  .dgrid{grid-template-columns:1fr;gap:12px}
+
+  /* ── Modals full-screen on mobile ── */
+  #add-modal{padding:0;align-items:flex-end}
+  #add-modal>div{
+    border-radius:var(--r2x) var(--r2x) 0 0;
+    padding:24px 18px 32px;
+    max-width:100%;width:100%;
+    max-height:92dvh;overflow-y:auto;
+  }
+  #ep-modal{padding:0;align-items:flex-end}
+  #ep-modal>div{
+    border-radius:var(--r2x) var(--r2x) 0 0;
+    padding:24px 18px 32px;
+    max-width:100%;width:100%;
+    max-height:92dvh;overflow-y:auto;
+  }
+
+  /* ── Bigger touch targets ── */
+  .btn,.btn-acc,.btn-ghost,.btn-danger{min-height:40px;padding:9px 14px}
+  .btn-sm{min-height:34px;padding:7px 10px}
+  .fi,.fta,.fsel{font-size:16px;padding:11px 12px} /* 16px prevents iOS zoom */
+  .nav-item,.mob-nav-item,.mob-more-item{min-height:44px}
+  .si{padding:13px 14px}
+  .pc-action{min-height:34px;padding:6px 10px}
+  .filter-btn{min-height:34px;padding:6px 13px}
+
+  /* ── Forms g2/g3 collapse ── */
+  .g2{grid-template-columns:1fr;gap:10px}
+
+  /* ── Hide sync right section on mobile ── */
+  .sync-right .sync-btn:last-child{display:none}
+
+  /* ── Supabase config box ── */
+  .sb-box{padding:28px 20px 32px;border-radius:var(--r2x) var(--r2x) 0 0;margin-top:auto;width:100%;max-width:100%}
+  #sb-screen{align-items:flex-end}
+}
+
+@media (max-width:380px){
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .mc-val{font-size:20px}
+  .dash-title{font-size:22px}
+  .g3,.g4{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
+
+<!-- ══ MOBILE HAMBURGER ══ -->
+<button id="mob-ham" onclick="mobDrawer()" aria-label="Menu">
+  <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+    <line x1="2" y1="5" x2="16" y2="5"/><line x1="2" y1="9" x2="16" y2="9"/><line x1="2" y1="13" x2="16" y2="13"/>
+  </svg>
+</button>
+
+<!-- ══ SIDEBAR OVERLAY ══ -->
+<div id="mob-overlay" onclick="mobDrawerClose()"></div>
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav id="mob-nav">
+  <button class="mob-nav-item active" id="mni-dash" onclick="mobNav('dash',this)">
+    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".6"/></svg>
+    <span>Início</span>
+  </button>
+  <button class="mob-nav-item" id="mni-people" onclick="mobNav('people',this)">
+    <svg viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="4" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M12 8c1.8.3 3 1.2 3 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    <span>Atores</span>
+  </button>
+  <button class="mob-nav-item" id="mni-episodes" onclick="mobNav('episodes',this)">
+    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    <span>Episódios</span>
+  </button>
+  <button class="mob-nav-item" id="mni-map" onclick="mobNav('map',this)">
+    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6.5" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M8 10v5M4.5 12c0-2 7-2 7 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="6.5" r="1" fill="currentColor"/></svg>
+    <span>Mapa</span>
+  </button>
+  <button class="mob-nav-item" id="mni-more" onclick="mobMore()">
+    <svg viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/></svg>
+    <span>Mais</span>
+  </button>
+</nav>
+
+<!-- ══ MORE SHEET ══ -->
+<div id="mob-more">
+  <button class="mob-more-item" id="mmi-dossier" onclick="mobNav('dossier',null);mobMoreClose()">
+    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14c0-3 2.5-4.5 6-4.5S14 11 14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Dossiês
+  </button>
+  <button class="mob-more-item" id="mmi-interview" onclick="mobNav('interview',null);mobMoreClose()">
+    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Entrevistas & Sessões
+  </button>
+  <button class="mob-more-item" id="mmi-analysis" onclick="mobNav('analysis',null);mobMoreClose()">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M2 12L5 8l3 2 3-4 3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="10" r="1.2" fill="currentColor"/><circle cx="11" cy="6" r="1.2" fill="currentColor"/></svg>
+    Análise qualitativa
+  </button>
+  <button class="mob-more-item" id="mmi-blog" onclick="mobNav('blog',null);mobMoreClose()">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M3 2h10v12H3z" stroke="currentColor" stroke-width="1.3" rx="1"/><path d="M5 5h6M5 8h6M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    Publicações
+  </button>
+  <div style="height:8px"></div>
+</div>
 
 <!-- ══ SUPABASE CONFIG SCREEN ══ -->
 <div id="sb-screen">
@@ -861,6 +1181,7 @@ function nav(id,el){
   if(id==='analysis')rasl();
   if(id==='blog')rbl();
   ub();
+  if(isMob && isMob())syncMobNav(id);
 }
 function ub(){
   const nb=id=>document.getElementById(id);
@@ -1834,6 +2155,78 @@ async function startApp(){
     // No creds anywhere — show config screen
     document.getElementById('sb-screen').style.display='flex';
   }
+}
+
+// ══════════════════════════════════════════════════
+// MOBILE NAV
+// ══════════════════════════════════════════════════
+function isMob(){ return window.innerWidth <= 768; }
+
+function mobNav(id, el){
+  // Close more sheet if open
+  mobMoreClose();
+  // Navigate using main nav function
+  nav(id, null);
+  // Update bottom nav active state
+  document.querySelectorAll('.mob-nav-item').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.mob-more-item').forEach(b=>b.classList.remove('active'));
+  const mni = document.getElementById('mni-'+id);
+  const mmi = document.getElementById('mmi-'+id);
+  if(mni) mni.classList.add('active');
+  if(mmi) mmi.classList.add('active');
+  // Scroll to top
+  window.scrollTo(0,0);
+}
+
+function mobDrawer(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('mob-overlay');
+  sb.classList.add('mob-open');
+  ov.style.display='block';
+  requestAnimationFrame(()=>ov.classList.add('show'));
+}
+function mobDrawerClose(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('mob-overlay');
+  sb.classList.remove('mob-open');
+  ov.classList.remove('show');
+  setTimeout(()=>ov.style.display='none', 250);
+}
+
+let _moreOpen=false;
+function mobMore(){
+  const sheet = document.getElementById('mob-more');
+  _moreOpen = !_moreOpen;
+  if(_moreOpen){
+    sheet.style.display='block';
+    requestAnimationFrame(()=>sheet.classList.add('open'));
+  } else {
+    mobMoreClose();
+  }
+}
+function mobMoreClose(){
+  const sheet = document.getElementById('mob-more');
+  sheet.classList.remove('open');
+  _moreOpen=false;
+  setTimeout(()=>sheet.style.display='none', 250);
+}
+
+// Close more sheet on outside tap
+document.addEventListener('click', e=>{
+  if(_moreOpen && !e.target.closest('#mob-more') && !e.target.closest('#mni-more')){
+    mobMoreClose();
+  }
+});
+
+// Sync mobile nav on navigate
+function syncMobNav(id){
+  document.querySelectorAll('.mob-nav-item').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.mob-more-item').forEach(b=>b.classList.remove('active'));
+  const mni = document.getElementById('mni-'+id);
+  const mmi = document.getElementById('mmi-'+id);
+  if(mni) mni.classList.add('active');
+  if(mmi) mmi.classList.add('active');
+  mobDrawerClose();
 }
 
 // ══════════════════════════════════════════════════
