@@ -1826,7 +1826,7 @@ function cpb(epId){const e=S.E(epId);if(!e)return;const pub=e.published||{};cons
 // Depois disso, qualquer pessoa que abrir o arquivo
 // conecta automaticamente, sem precisar configurar nada.
 const SB_URL_FIXED = 'https://ngeogbbsvohgscyeqbvr.supabase.co';   // ex: 'https://xxxx.supabase.co'
-const SB_KEY_FIXED = 'sb_publishable_T2qhJ64P_xIEjpd3Y6GVpA_CKNC6JeU';   // ex: 'sb_publishable_...'
+const SB_KEY_FIXED = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZW9nYmJzdm9oZ3NjeWVxYnZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDk1NTcsImV4cCI6MjA5MDYyNTU1N30._ajMoa521ijfoFcSlLxH6htzGGZRRS32mzoLIWg7V5k';   // ex: 'sb_publishable_...'
 // ──────────────────────────────────────────────────
 
 const SB_KEY = 'cm_sb_creds';
@@ -1853,25 +1853,13 @@ async function sbConnect(){
   err.style.display='none';
   if(!url||!key){ sbShowErr('Preencha os dois campos.'); return; }
   if(!url.startsWith('https://')){ sbShowErr('URL deve começar com https://'); return; }
-  // Accept both legacy anon key (eyJ...) and new publishable key (sb_publishable_...)
-  if(!key.startsWith('eyJ') && !key.startsWith('sb_publishable_')){
-    sbShowErr('Use a Publishable key (começa com sb_publishable_) ou a Legacy anon key (começa com eyJ). Não use a Secret key.');
-    return;
-  }
-  if(key.startsWith('sb_secret_')){
-    sbShowErr('Não use a Secret key — ela é apenas para servidores. Use a Publishable key.');
-    return;
-  }
   btn.disabled=true; btn.textContent='Conectando…';
   try{
-    // For new publishable keys, pass as Authorization header format
-    const clientOptions = key.startsWith('sb_publishable_')
-      ? { auth: { persistSession: true }, global: { headers: { 'Authorization': `Bearer ${key}`, 'apikey': key } } }
-      : {};
-    _SBC = supabase.createClient(url, key, clientOptions);
-    // Test connection — read any table (ignore "table not found" errors)
+    _SBC = supabase.createClient(url, key, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
     const {error} = await _SBC.from('cm_people').select('id').limit(1);
-    if(error && error.code!=='PGRST116' && error.code!=='42P01' && !error.message?.includes('does not exist')){
+    if(error && !['PGRST116','42P01'].includes(error.code)){
       throw new Error(error.message);
     }
     sbCredsSave(url,key);
@@ -1880,12 +1868,12 @@ async function sbConnect(){
     sbStartRealtime();
     document.getElementById('sb-screen').style.display='none';
     document.getElementById('sync-bar').classList.add('show');
-    sbSyncStatus('ok','Conectado ao Supabase · dados sincronizados');
+    sbSyncStatus('ok','✓ Conectado ao Supabase');
     init();
   }catch(e){
     _SBC=null; _SBmode=false;
     btn.disabled=false; btn.textContent='Conectar e sincronizar';
-    sbShowErr('Erro de conexão: '+e.message+'. Verifique se rodou o SQL de setup e se a URL está correta.');
+    sbShowErr('Erro: '+e.message);
   }
 }
 
@@ -2180,90 +2168,32 @@ async function startApp(){
   }
 
   document.getElementById('sb-screen').style.display='none';
-  sbSyncStatus('saving','Conectando ao Supabase…');
+  sbSyncStatus('saving','Conectando…');
 
-  // Try multiple approaches for publishable key compatibility
-  const key = creds.key;
-  const url = creds.url;
-  let connected = false;
-  let lastErr = '';
+  try{
+    // Legacy anon key (eyJ...) works directly with supabase-js v2
+    _SBC = supabase.createClient(creds.url, creds.key, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
 
-  // Approach 1: publishable key with explicit headers (new Supabase format)
-  const approaches = [
-    {
-      label: 'headers explícitos',
-      opts: {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
-        global: { headers: { 'apikey': key, 'Authorization': 'Bearer ' + key } }
-      }
-    },
-    {
-      label: 'sem opções extras',
-      opts: {}
-    },
-    {
-      label: 'Authorization only',
-      opts: {
-        global: { headers: { 'Authorization': 'Bearer ' + key } }
-      }
+    const { error } = await _SBC.from('cm_people').select('id').limit(1);
+    if(error && !['PGRST116','42P01'].includes(error.code)){
+      throw new Error(error.message);
     }
-  ];
 
-  for(const approach of approaches){
-    try{
-      sbSyncStatus('saving', 'Tentando ' + approach.label + '…');
-      _SBC = supabase.createClient(url, key, approach.opts);
-      const { data, error } = await _SBC.from('cm_people').select('id').limit(1);
-      if(error && !['PGRST116','42P01','PGRST200'].includes(error.code)){
-        lastErr = approach.label + ': ' + error.message + ' (code:' + error.code + ')';
-        _SBC = null;
-        continue;
-      }
-      // Success
-      connected = true;
-      break;
-    }catch(e){
-      lastErr = approach.label + ': ' + e.message;
-      _SBC = null;
-    }
-  }
-
-  if(connected){
     _SBmode = true;
-    try{
-      await sbLoad();
-      sbStartRealtime();
-      sbSyncStatus('ok','✓ Conectado · dados carregados');
-    }catch(loadErr){
-      sbSyncStatus('err','Conectado mas erro ao carregar: ' + loadErr.message);
-    }
-  } else {
+    await sbLoad();
+    sbStartRealtime();
+    sbSyncStatus('ok','✓ Conectado ao Supabase');
+
+  }catch(e){
     _SBC = null;
     _SBmode = false;
-    // Show error visibly in the dashboard
-    sbSyncStatus('err','Sem sync · ' + lastErr);
-    // Store error for debug panel
-    window._sbLastErr = lastErr;
+    sbSyncStatus('err','Erro: ' + e.message + ' — toque ↻');
+    console.error('[Supabase]', e);
   }
 
   init();
-
-  // Show debug info in dashboard if connection failed
-  if(!connected){
-    setTimeout(()=>{
-      const dbody = document.getElementById('dash-body');
-      if(dbody){
-        const dbg = document.createElement('div');
-        dbg.style.cssText = 'background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:16px;margin-bottom:20px;font-size:12px;color:#856404;font-family:monospace;line-height:1.6';
-        dbg.innerHTML = '<strong>⚠ Supabase não conectado</strong><br>'
-          + 'URL: ' + url + '<br>'
-          + 'Key: ' + key.substring(0,30) + '…<br>'
-          + 'Erro: ' + lastErr + '<br><br>'
-          + '<button onclick="sbForceSync()" style="background:#c4410c;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-family:sans-serif">↻ Tentar reconectar</button>';
-        dbody.insertBefore(dbg, dbody.firstChild);
-      }
-    }, 500);
-  }
 }
 
 // ══════════════════════════════════════════════════
