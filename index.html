@@ -6,6 +6,8 @@
 <title>Content Moderation in AI · DigiLabour</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,500;1,9..144,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root {
@@ -287,6 +289,17 @@ textarea.fta{resize:vertical;line-height:1.55}
 .mc-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
 .dash-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:18px}
 
+/* ══ DASHBOARD MAP ══ */
+.dash-map-wrap{margin-bottom:18px;border-radius:var(--rlg);overflow:hidden;border:1px solid var(--rule);box-shadow:var(--sc);position:relative}
+#dash-map{height:360px;background:var(--cream2)}
+.leaflet-container{background:#e8e2d6;font-family:var(--fb)}
+.map-panel{position:absolute;top:10px;right:10px;z-index:800;background:#fff;border:1px solid var(--rule);border-radius:var(--rlg);box-shadow:var(--s2);width:240px;max-height:320px;display:none;flex-direction:column;overflow:hidden}
+.map-panel.on{display:flex}
+.map-panel-h{padding:10px 12px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.map-panel-body{overflow-y:auto;padding:12px;flex:1}
+.map-panel-close{margin-left:auto;background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);line-height:1;transition:color .13s}
+.map-panel-close:hover{color:var(--ink)}
+
 /* ══ MOBILE ══ */
 #mob-ham{display:none;position:fixed;top:10px;left:12px;z-index:210;width:38px;height:38px;border-radius:var(--r);background:var(--ink);border:none;cursor:pointer;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 #mob-ham svg{width:17px;height:17px;color:rgba(255,255,255,.7)}
@@ -303,6 +316,40 @@ textarea.fta{resize:vertical;line-height:1.55}
 .mmi svg{width:17px;height:17px;opacity:.5;flex-shrink:0}
 .mmi.on{color:var(--terra)}
 
+/* ── Responsive visibility ── */
+.mob-only{display:none}
+@media(max-width:768px){
+  .mob-only{display:flex !important}
+  .desk-only{display:none !important}
+  #dash-map{display:none} /* use mobMapOpen button instead */
+  .dash-map-wrap>#dash-map{display:none}
+}
+
+/* ── Mobile episode detail sheet ── */
+#mob-ep-sheet{
+  display:none;position:fixed;inset:0;z-index:300;
+  background:var(--cream);flex-direction:column;overflow:hidden;
+}
+#mob-ep-sheet.on{display:flex}
+.mob-ep-bar{
+  height:50px;background:#fff;border-bottom:1px solid var(--rule);
+  display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;
+  box-shadow:var(--s1);
+}
+.mob-back{background:none;border:none;cursor:pointer;color:var(--terra);font-size:14px;font-weight:600;font-family:var(--fb);display:flex;align-items:center;gap:4px;padding:8px 0;-webkit-tap-highlight-color:transparent}
+.mob-back svg{width:16px;height:16px}
+.mob-ep-tabs-wrap{background:#fff;border-bottom:1px solid var(--rule);flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex}
+.mob-ep-tabs-wrap .ep-tab{padding:12px 18px;font-size:13px;white-space:nowrap}
+.mob-ep-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--cream);padding-bottom:20px}
+
+/* ── Mobile map sheet ── */
+#mob-map-sheet{
+  display:none;position:fixed;inset:0;z-index:300;
+  background:#fff;flex-direction:column;overflow:hidden;
+}
+#mob-map-sheet.on{display:flex}
+#mob-map{flex:1;min-height:0}
+
 @media (max-width:768px){
   html,body{overflow:auto;height:auto;min-height:100%}
   #shell{flex-direction:column;height:auto;min-height:100dvh;overflow:visible}
@@ -311,44 +358,64 @@ textarea.fta{resize:vertical;line-height:1.55}
   #main{width:100%;min-height:100dvh;padding-bottom:var(--mob-nav-h);display:block;overflow:visible}
   #topbar{height:50px;padding:0 52px 0 14px;position:sticky;top:0;z-index:100}
   .tb-title{font-size:14px}
-  .page{display:none;width:100%;min-height:calc(100dvh - 50px - var(--mob-nav-h));overflow:visible;flex-direction:column}
+  .page{display:none;width:100%;overflow:visible;flex-direction:column;min-height:calc(100dvh - 50px - var(--mob-nav-h))}
   .page.on{display:flex}
   #mob-ham{display:flex}
   #mob-nav{display:flex}
   #syncbar{bottom:var(--mob-nav-h);height:24px;font-size:10px}
 
-  /* episodes mobile */
+  /* episodes: full-screen list on mobile, detail opens as overlay */
   #page-eps{flex-direction:column}
-  .ep-list-col{width:100%;border-right:none;border-bottom:1px solid var(--rule);max-height:45vh;flex-shrink:0}
-  .ep-detail{min-height:55vh}
+  .ep-list-col{width:100%;border-right:none;border-bottom:none;flex:1;overflow-y:auto;max-height:none}
+  .ep-detail{display:none !important} /* hidden on mobile — use mob-ep-sheet instead */
 
-  /* people mobile */
-  .ppl-grid{grid-template-columns:1fr;padding:14px 14px}
-  .ppl-bar{padding:10px 14px}
-  .ppl-bar .fi{max-width:100%}
+  /* people */
+  .ppl-grid{grid-template-columns:1fr;padding:12px}
+  .ppl-bar{padding:10px 12px;flex-wrap:wrap}
 
-  /* dashboard mobile */
-  .dash-inner{padding:16px 14px}
-  .dash-h1{font-size:24px}
-  .metrics{grid-template-columns:repeat(3,1fr);gap:9px}
-  .mc{padding:11px 10px}
-  .mc-val{font-size:22px}
-  .mc-sub{display:none}
-  .dash-grid{grid-template-columns:1fr;gap:14px}
+  /* dashboard */
+  .dash-inner{padding:14px 12px}
+  .dash-h1{font-size:22px}
+  .metrics{grid-template-columns:repeat(3,1fr);gap:8px}
+  .mc{padding:10px 9px}
+  .mc-val{font-size:20px}
+  .mc-lbl{font-size:9px}
+  .dash-grid{grid-template-columns:1fr;gap:12px}
+  #dash-map{height:250px}
+  .dash-map-wrap .map-panel{width:calc(100vw - 20px);right:10px;left:10px}
 
-  /* grids */
+  /* grids collapse */
   .g2,.g3{grid-template-columns:1fr;gap:10px}
 
-  /* touch */
-  .btn{min-height:38px}
-  input.fi,textarea.fta,select.fsel{font-size:16px;padding:10px 11px}
+  /* touch targets — everything minimum 44px */
+  .btn{min-height:44px;padding:10px 16px}
+  .btn.sm{min-height:38px;padding:8px 12px}
+  .btn.xs{min-height:32px;padding:6px 10px}
+  input.fi,textarea.fta,select.fsel{font-size:16px !important;padding:12px 12px;min-height:44px}
+  textarea.fta{min-height:80px}
+  .chip{padding:8px 14px;font-size:13px}
+  .ep-tab,.mob-ep-tabs-wrap .ep-tab{min-height:44px;display:flex;align-items:center}
+  .q-del{min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center}
+  .pca{min-height:36px;padding:6px 12px;font-size:12px}
+  .filt-btn{min-height:36px;padding:6px 14px}
 
-  /* modals */
+  /* pessoa chip bigger */
+  .pessoa-chip{padding:12px}
+
+  /* modal: bottom sheet */
   .modal-bg{padding:0;align-items:flex-end}
-  .modal-box{border-radius:var(--r2x) var(--r2x) 0 0;padding:24px 18px 32px;max-width:100%;max-height:92dvh;overflow-y:auto;margin:0}
+  .modal-box{border-radius:var(--r2x) var(--r2x) 0 0;padding:24px 16px 36px;max-width:100%;max-height:94dvh;overflow-y:auto;margin:0}
+  .modal-box::before{content:'';display:block;width:36px;height:4px;background:var(--rule2);border-radius:10px;margin:0 auto 20px}
+
+  /* ep detail tab content padding */
+  .ep-tc{padding:14px}
+
+  /* publication editor in mobile sheet */
+  .pub-ed{min-height:200px;font-size:15px}
 }
 @media (max-width:380px){
   .metrics{grid-template-columns:repeat(2,1fr)}
+  .dash-h1{font-size:20px}
 }
 </style>
 </head>
@@ -384,6 +451,36 @@ textarea.fta{resize:vertical;line-height:1.55}
   <button class="mmi" onclick="go('dash',null);mobMoreClose()"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor"/></svg>Dashboard</button>
   <button class="mmi" onclick="go('eps',null);mobMoreClose()"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/></svg>Episódios</button>
   <button class="mmi" onclick="go('ppl',null);mobMoreClose()"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/></svg>Pesquisadores & Atores</button>
+</div>
+
+<!-- Mobile episode detail sheet -->
+<div id="mob-ep-sheet">
+  <div class="mob-ep-bar">
+    <button class="mob-back" onclick="mobEpClose()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 3L5 8l5 5"/></svg>
+      Episódios
+    </button>
+    <div id="mob-ep-title" style="flex:1;font-family:var(--fh);font-size:14px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 8px"></div>
+    <button class="btn acc xs" onclick="S.save(true)">Salvar</button>
+  </div>
+  <div class="mob-ep-tabs-wrap" id="mob-ep-tabs"></div>
+  <div class="mob-ep-content" id="mob-ep-content"></div>
+</div>
+
+<!-- Mobile map sheet -->
+<div id="mob-map-sheet">
+  <div class="mob-ep-bar">
+    <button class="mob-back" onclick="mobMapClose()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 3L5 8l5 5"/></svg>
+      Dashboard
+    </button>
+    <div style="flex:1;font-family:var(--fh);font-size:14px;font-weight:700;color:var(--ink);margin-left:8px">Mapa de atores</div>
+  </div>
+  <div id="mob-map"></div>
+  <div class="map-panel" id="mob-map-panel" style="position:absolute;top:60px;left:10px;right:10px;width:auto;max-height:60%;display:none;flex-direction:column">
+    <div class="map-panel-h"><div id="mob-map-panel-name" style="font-size:13px;font-weight:600;color:var(--ink);flex:1"></div><button class="map-panel-close" onclick="document.getElementById('mob-map-panel').classList.remove('on')">×</button></div>
+    <div class="map-panel-body" id="mob-map-panel-body"></div>
+  </div>
 </div>
 
 <div id="shell">
@@ -648,7 +745,7 @@ function go(id, el){
   document.getElementById('mni-'+id)?.classList.add('on');
   mobDrawClose();
   // render
-  if(id==='dash') rdash();
+  if(id==='dash') { rdash(); setTimeout(initMap,80); }
   if(id==='eps') rEpList();
   if(id==='ppl') rppl();
   ubadges();
@@ -710,6 +807,26 @@ function rdash(){
           <button class="btn ghost" style="flex:1" onclick="go('ppl',null)">→ Atores</button>
         </div>
       </div>
+    </div>
+    <!-- Map -->
+    <div class="dash-map-wrap">
+      <div style="padding:10px 14px;background:#fff;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:10px">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--faint)">Mapa de pesquisadores & atores</div>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <button class="btn ghost xs mob-only" onclick="mobMapOpen()" style="display:none">🗺 Ver mapa</button>
+          <button class="btn ghost xs desk-only" onclick="mapFilter('Sul Global')" id="mf-sul" style="font-size:10px">Sul Global</button>
+          <button class="btn ghost xs desk-only" onclick="mapFilter('Norte Global')" id="mf-norte" style="font-size:10px">Norte Global</button>
+          <button class="btn ghost xs desk-only" onclick="mapFilter(null)" style="font-size:10px">Todos</button>
+        </div>
+      </div>
+      <div id="dash-map"></div>
+      <div class="map-panel" id="map-panel">
+        <div class="map-panel-h">
+          <div id="map-panel-name" style="font-size:13px;font-weight:600;color:var(--ink)"></div>
+          <button class="map-panel-close" onclick="closeMapPanel()">×</button>
+        </div>
+        <div class="map-panel-body" id="map-panel-body"></div>
+      </div>
     </div>`;
 }
 
@@ -736,7 +853,11 @@ function rEpList(){
 function selEp(id){
   _selEp=id;
   rEpList();
-  renderEpDetail(id);
+  if(isMob()){
+    mobEpOpen(id);
+  } else {
+    renderEpDetail(id);
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -1055,6 +1176,249 @@ function delP(id){ const p=S.P(id); conf('Excluir pessoa','Remover "'+p?.name+'"
 // MOBILE NAV
 // ══════════════════════════════════════════════════
 function isMob(){ return window.innerWidth<=768; }
+
+// ── Mobile episode sheet ──
+let _mobEpTab = 'ficha';
+function mobEpOpen(id){
+  const ep = S.E(id); if(!ep) return;
+  document.getElementById('mob-ep-title').textContent = ep.title||'Episódio';
+  _mobEpTab = _epTab; // sync with desktop tab
+  mobEpRender(id);
+  document.getElementById('mob-ep-sheet').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+function mobEpClose(){
+  document.getElementById('mob-ep-sheet').classList.remove('on');
+  document.body.style.overflow = '';
+}
+function mobEpRender(id){
+  const ep = S.E(id); if(!ep) return;
+  // render tabs
+  const tabs = [['ficha','Ficha'],['roteiro','Roteiro'],['trechos','Trechos'],['pub','Publicação'],['notas','Notas']];
+  document.getElementById('mob-ep-tabs').innerHTML = tabs.map(([k,l])=>
+    `<button class="ep-tab${_mobEpTab===k?' on':''}" onclick="setMobEpTab('${k}','${id}')">${l}</button>`
+  ).join('');
+  // render content into mob-ep-content (same functions as desktop but different container)
+  const box = document.getElementById('mob-ep-content');
+  // temporarily set ep-tc to mob-ep-content so renderEpTab writes there
+  const orig = _selEp;
+  _selEp = id;
+  // inject tab content
+  box.innerHTML = '';
+  renderMobEpTab(id, box);
+}
+function setMobEpTab(tab, id){ _mobEpTab = tab; _epTab = tab; mobEpRender(id); }
+
+function renderMobEpTab(id, box){
+  const ep = S.E(id); if(!ep||!box) return;
+  const c = ecolor(ep);
+
+  if(_mobEpTab === 'ficha'){
+    const res = (ep.researchers||[]).map(r=>S.P(r)).filter(Boolean);
+    const avail = S.p.filter(p=>!(ep.researchers||[]).includes(p.id));
+    box.innerHTML = `
+      <div style="padding:14px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:10px">Editar episódio</div>
+        <div class="fg"><label class="fl">Título</label><input class="fi" value="${san(ep.title||'')}" oninput="S.uE('${san(id)}','title',this.value);document.getElementById('mob-ep-title').textContent=this.value;rEpList()"></div>
+        <div class="fg"><label class="fl">Ângulo editorial</label><input class="fi" value="${san(ep.angle||'')}" placeholder="O que este episódio responde?" oninput="S.uE('${san(id)}','angle',this.value)"></div>
+        <div class="g2">
+          <div class="fg"><label class="fl">Mês</label>
+            <select class="fsel" onchange="S.uE('${san(id)}','month',this.value)">
+              ${['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map(m=>`<option${ep.month===m?' selected':''}>${m}</option>`).join('')}
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Ano</label>
+            <select class="fsel" onchange="S.uE('${san(id)}','year',parseInt(this.value))">
+              ${[2026,2027,2028].map(y=>`<option${ep.year===y?' selected':''}>${y}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="fg"><label class="fl">Status</label>
+          <select class="fsel" onchange="S.uE('${san(id)}','status',this.value);rEpList()">
+            ${['pending','scheduled','done','published'].map(v=>`<option value="${v}"${ep.status===v?' selected':''}>${{pending:'Pendente',scheduled:'Agendado',done:'Realizado',published:'Publicado'}[v]}</option>`).join('')}
+          </select>
+        </div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin:16px 0 10px">Tags temáticas</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+          ${Object.entries(TAGS).map(([k,v])=>`<span class="chip${(ep.tags||[]).includes(k)?' on':''}" style="background:${(ep.tags||[]).includes(k)?TC[k]+'18':'var(--cream2)'};color:${TC[k]};border-color:${(ep.tags||[]).includes(k)?TC[k]:'transparent'}" onclick="toggleTag('${san(id)}','${k}');renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">${v}</span>`).join('')}
+        </div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:10px">Pesquisadores vinculados</div>
+        ${res.map(p=>`<div class="pessoa-chip" style="margin-bottom:8px">
+          ${pav(p,36)}<div style="flex:1;min-width:0"><div class="pessoa-chip-name">${san(p.name)}</div><div class="pessoa-chip-sub">${san(p.org||'')}</div></div>
+          <button class="btn danger xs" onclick="toggleRes('${san(id)}','${san(p.id)}');renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">×</button>
+        </div>`).join('')}
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin:12px 0 8px">Adicionar pesquisador</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${avail.map(p=>`<span class="chip" style="background:var(--cream2);color:var(--ink3)" onclick="toggleRes('${san(id)}','${san(p.id)}');renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">${san(p.name.split(' ')[0])}</span>`).join('')}
+        </div>
+      </div>`;
+  }
+  else if(_mobEpTab === 'roteiro'){
+    box.innerHTML = `<div style="padding:14px">
+      <div id="mob-q-list">
+        ${(ep.questions||[]).length ? ep.questions.map((q,i)=>`
+          <div class="q-item" style="margin-bottom:10px">
+            <span class="q-n" style="font-size:12px;min-width:24px">${i+1}.</span>
+            <textarea class="q-txt" rows="2" style="font-size:15px;padding:4px 0" oninput="autoH(this);S.uEarr('${san(id)}','questions',${i},this.value)">${san(q)}</textarea>
+            <button class="q-del" onclick="delQ('${san(id)}',${i});renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">×</button>
+          </div>`).join('') : '<div style="color:var(--faint);font-size:13px;padding:8px 0 16px">Nenhuma pergunta ainda.</div>'}
+      </div>
+      <div class="add-row" style="margin-top:8px">
+        <textarea class="add-inp" id="mob-nq-${san(id)}" placeholder="Nova pergunta…" rows="2" style="font-size:15px;min-height:54px;border-radius:var(--r);padding:10px 12px"></textarea>
+      </div>
+      <button class="btn acc" style="width:100%;margin-top:8px" onclick="mobAddQ('${san(id)}')">+ Adicionar pergunta</button>
+      ${ep.questions?.length ? `<button class="btn ghost" style="width:100%;margin-top:8px" onclick="copyQ('${san(id)}');toast('Copiado!','s')">📋 Copiar roteiro</button>` : ''}
+    </div>`;
+    setTimeout(()=>{ document.querySelectorAll('.q-txt').forEach(t=>autoH(t)); }, 20);
+  }
+  else if(_mobEpTab === 'trechos'){
+    const res = (ep.researchers||[]).map(r=>S.P(r)).filter(Boolean);
+    box.innerHTML = `<div style="padding:14px">
+      ${(ep.excerpts||[]).map((ex,i)=>`<div class="ex-item" style="margin-bottom:12px">
+        <div class="ex-meta"><strong>${san(ex.speaker||'—')}</strong>${ex.tag?`<span style="font-size:11px;background:${TC[ex.tag]||'#c4bbb0'}18;color:${TC[ex.tag]||'var(--terra)'};padding:2px 7px;border-radius:10px;font-weight:600">${TAGS[ex.tag]||ex.tag}</span>`:''}<button style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--faint);font-size:18px;padding:4px 8px;-webkit-tap-highlight-color:transparent" onclick="delEx('${san(id)}',${i});renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">×</button></div>
+        <div class="ex-txt">"${san(ex.text)}"</div>
+      </div>`).join('')||'<div style="color:var(--faint);font-size:13px;padding:8px 0 16px">Nenhum trecho ainda.</div>'}
+      <div class="card" style="margin-top:8px">
+        <div class="ch">Registrar trecho</div>
+        <div class="fg"><label class="fl">Trecho</label><textarea class="fta" id="mob-nex-t-${san(id)}" rows="3" placeholder="Cole ou escreva…" style="font-size:15px"></textarea></div>
+        <div class="fg"><label class="fl">Quem disse?</label>
+          <select class="fsel" id="mob-nex-sp-${san(id)}">
+            <option value="">— Selecione —</option>
+            ${res.map(p=>`<option value="${san(p.name)}">${san(p.name)}</option>`).join('')}
+            <option value="_outro">Outro…</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Tema</label>
+          <select class="fsel" id="mob-nex-tag-${san(id)}">
+            <option value="">Sem tema</option>
+            ${Object.entries(TAGS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}
+          </select>
+        </div>
+        <button class="btn acc" style="width:100%" onclick="mobAddEx('${san(id)}')">Salvar trecho</button>
+      </div>
+    </div>`;
+  }
+  else if(_mobEpTab === 'pub'){
+    const pub = ep.published||{};
+    box.innerHTML = `<div>
+      <div style="padding:14px;background:#fff;border-bottom:1px solid var(--rule)">
+        <div class="fg"><label class="fl">Título do post</label><input class="fi" value="${san(pub.title||ep.title||'')}" oninput="upub('${san(id)}','title',this.value)" style="font-size:15px"></div>
+        <div class="fg"><label class="fl">Subtítulo</label><input class="fi" value="${san(pub.subtitle||ep.angle||'')}" oninput="upub('${san(id)}','subtitle',this.value)" style="font-size:15px"></div>
+        <div class="fg" style="margin:0"><label class="fl">Introdução</label><textarea class="fta" rows="3" oninput="upub('${san(id)}','intro',this.value)" placeholder="Contextualize a entrevista…" style="font-size:15px">${san(pub.intro||'')}</textarea></div>
+      </div>
+      <div style="padding:10px 14px;background:var(--cream2);border-bottom:1px solid var(--rule);display:flex;gap:6px;flex-wrap:wrap">
+        ${[['P:','**P:** ',''],['R:','**R:** ',''],['> ','> ','']].map(([l,pre,pos])=>`<button class="tool-btn" onclick="fmtMobPub('${san(id)}','${pre.replace(/'/g,"\'")}','${pos.replace(/'/g,"\'")}') ">${l}</button>`).join('')}
+        <button class="tool-btn" onclick="genPubStruct('${san(id)}');renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))" style="margin-left:auto;border-color:var(--terra);color:var(--terra)">Gerar P/R</button>
+      </div>
+      <textarea id="mob-pub-ed-${san(id)}" style="width:100%;min-height:300px;padding:16px;font-size:15px;line-height:1.8;font-family:var(--fb);border:none;resize:none;background:#fff;outline:none;display:block" placeholder="P: Primeira pergunta…
+
+R: Resposta…" oninput="upub('${san(id)}','body',this.value)">${san(pub.body||'')}</textarea>
+      <div style="padding:12px 14px;background:#fff;border-top:1px solid var(--rule)">
+        <button class="btn ghost" style="width:100%" onclick="cpPub('${san(id)}')">📋 Copiar texto completo</button>
+      </div>
+    </div>`;
+  }
+  else if(_mobEpTab === 'notas'){
+    box.innerHTML = `<div style="padding:14px">
+      <div class="fg"><label class="fl">Notas internas</label>
+        <textarea class="fta" rows="8" placeholder="Observações, contatos, lembretes…" oninput="S.uE('${san(id)}','notes',this.value)" style="font-size:15px">${san(ep.notes||'')}</textarea>
+      </div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin:16px 0 8px">Reordenar na série</div>
+      <div style="font-size:13px;color:var(--ink3);margin-bottom:10px">Posição atual: <strong>Ep. ${ep.order}</strong> de ${S.e.length}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
+        ${S.e.filter(e=>e.id!==id).map(e=>`<button class="btn ghost sm" onclick="swapOrder('${san(id)}',${e.order});renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">↕ Ep.${e.order}</button>`).join('')}
+      </div>
+      <button class="btn danger" style="width:100%" onclick="if(confirm('Excluir episódio?')){mobEpClose();delEp('${san(id)}');}">Excluir episódio</button>
+    </div>`;
+  }
+}
+
+function mobAddQ(id){
+  const inp = document.getElementById('mob-nq-'+id);
+  if(!inp?.value.trim()) return;
+  const e = S.E(id); if(!e.questions)e.questions=[];
+  e.questions.push(inp.value.trim());
+  inp.value='';
+  S.save(true);
+  renderMobEpTab(id, document.getElementById('mob-ep-content'));
+}
+function mobAddEx(id){
+  const t = document.getElementById('mob-nex-t-'+id)?.value.trim();
+  if(!t) return;
+  const sp = document.getElementById('mob-nex-sp-'+id)?.value;
+  const tag = document.getElementById('mob-nex-tag-'+id)?.value;
+  const e = S.E(id); if(!e.excerpts)e.excerpts=[];
+  e.excerpts.push({text:t, speaker:sp==='_outro'?'':sp, tag});
+  S.save(true);
+  renderMobEpTab(id, document.getElementById('mob-ep-content'));
+}
+function fmtMobPub(id,pre,pos){
+  const ta = document.getElementById('mob-pub-ed-'+id);
+  if(!ta) return;
+  const s=ta.selectionStart, en=ta.selectionEnd, sel=ta.value.substring(s,en);
+  ta.value=ta.value.substring(0,s)+pre+sel+pos+ta.value.substring(en);
+  ta.focus();
+  upub(id,'body',ta.value);
+}
+
+// ── Mobile map sheet ──
+let _mobMap = null, _mobMapMarkers = {};
+function mobMapOpen(){
+  document.getElementById('mob-map-sheet').classList.add('on');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>{
+    if(!_mobMap){
+      _mobMap = L.map('mob-map',{center:[15,10],zoom:2,zoomControl:true,attributionControl:false});
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(_mobMap);
+      renderMobMapMarkers();
+    } else {
+      _mobMap.invalidateSize();
+    }
+  },80);
+}
+function mobMapClose(){
+  document.getElementById('mob-map-sheet').classList.remove('on');
+  document.body.style.overflow='';
+}
+function renderMobMapMarkers(){
+  if(!_mobMap)return;
+  Object.values(_mobMapMarkers).forEach(m=>_mobMap.removeLayer(m));
+  _mobMapMarkers={};
+  S.p.forEach(p=>{
+    const lat=parseFloat(p.lat),lng=parseFloat(p.lng);
+    if(isNaN(lat)||isNaN(lng)||(!lat&&!lng))return;
+    const bg=clr(p.id);
+    const icon=L.divIcon({
+      className:'',
+      html:`<div style="display:flex;flex-direction:column;align-items:center">
+        <div style="width:40px;height:40px;border-radius:50%;background:${bg};border:2.5px solid #fff;box-shadow:0 2px 10px rgba(24,20,15,.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;font-family:'Fraunces',serif">${san(ini(p.name))}</div>
+        <div style="width:1.5px;height:7px;background:${bg};opacity:.5"></div>
+        <div style="width:4px;height:4px;border-radius:50%;background:${bg};opacity:.5"></div>
+        <div style="margin-top:2px;font-size:9px;font-weight:600;background:rgba(255,255,255,.95);color:${bg};padding:1px 6px;border-radius:8px;white-space:nowrap;box-shadow:0 1px 3px rgba(24,20,15,.1);font-family:'DM Sans',sans-serif">${san(p.name.split(' ')[0])}</div>
+      </div>`,
+      iconSize:[80,68],iconAnchor:[40,58]
+    });
+    const m=L.marker([lat,lng],{icon}).addTo(_mobMap).on('click',()=>openMobMapPanel(p.id));
+    _mobMapMarkers[p.id]=m;
+  });
+}
+function openMobMapPanel(id){
+  const p=S.P(id); if(!p)return;
+  const eps=S.e.filter(e=>(e.researchers||[]).includes(p.id));
+  document.getElementById('mob-map-panel-name').textContent=p.name;
+  document.getElementById('mob-map-panel-body').innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:10px">${pav(p,36)}<div>${tbdg(p.type)}<div style="font-size:12px;color:var(--muted);margin-top:2px">${san(p.org||'—')}</div><div style="font-size:11px;color:var(--terra)">${san(p.city||'')}${p.city&&p.country?', ':''}${san(p.country||'')}</div></div></div>
+    ${p.bio?`<div style="font-size:12px;color:var(--ink3);line-height:1.55;margin-bottom:10px">${san(p.bio.substring(0,140))}${p.bio.length>140?'…':''}</div>`:''}
+    ${eps.length?`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--faint);margin-bottom:6px">Episódios</div>
+    ${eps.map(e=>`<div style="padding:8px 10px;background:var(--cream);border-radius:var(--r);margin-bottom:5px;font-size:13px;cursor:pointer" onclick="mobMapClose();setTimeout(()=>selEp('${san(e.id)}'),200)">
+      <span style="font-family:var(--fm);font-size:10px;color:var(--terra)">Ep.${e.order} · ${san(e.month)} ${e.year}</span><br>${san(e.title)}</div>`).join('')}`:''}`;
+  const panel=document.getElementById('mob-map-panel');
+  panel.style.display='flex';
+  panel.classList.add('on');
+  const lat=parseFloat(p.lat),lng=parseFloat(p.lng);
+  if(!isNaN(lat)&&!isNaN(lng)) _mobMap.flyTo([lat,lng],5,{duration:.6});
+}
+
 function mobDraw(){ document.getElementById('sidebar').classList.add('on'); const ov=document.getElementById('mob-overlay'); ov.style.display='block'; requestAnimationFrame(()=>ov.classList.add('on')); }
 function mobDrawClose(){ document.getElementById('sidebar').classList.remove('on'); const ov=document.getElementById('mob-overlay'); ov.classList.remove('on'); setTimeout(()=>ov.style.display='none',220); }
 let _moreOpen=false;
@@ -1114,8 +1478,8 @@ async function sbLoad(){
 }
 
 function rerender(){
-  if(_pg==='dash')rdash();
-  if(_pg==='eps'){rEpList();if(_selEp)renderEpDetail(_selEp);}
+  if(_pg==='dash'){ rdash(); setTimeout(()=>{ if(_map)rMapMarkers(); else initMap(); if(_mobMap)renderMobMapMarkers(); },80); }
+  if(_pg==='eps'){rEpList();if(_selEp&&!isMob())renderEpDetail(_selEp);}
   if(_pg==='ppl')rppl();
   ubadges();
 }
@@ -1146,11 +1510,94 @@ async function sbSync(){ if(!_sbOn){await sbConnect();}else{sbStat('saving','Sin
 function sbDisc(){ if(_sbCh&&_sb)_sb.removeChannel(_sbCh); _sb=null;_sbOn=false;_sbCh=null; document.getElementById('syncbar').classList.remove('on'); toast('Desconectado','w'); }
 
 // ══════════════════════════════════════════════════
+// DASHBOARD MAP
+// ══════════════════════════════════════════════════
+let _map=null,_mapMarkers={},_mapFilter=null;
+
+function initMap(){
+  if(_map){ _map.remove(); _map=null; _mapMarkers={}; }
+  const el=document.getElementById('dash-map');
+  if(!el)return;
+  _map=L.map('dash-map',{center:[15,10],zoom:2,zoomControl:true,attributionControl:false});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(_map);
+  L.control.attribution({prefix:'© CartoDB · OSM',position:'bottomleft'}).addTo(_map);
+  rMapMarkers();
+}
+
+function rMapMarkers(){
+  if(!_map)return;
+  Object.values(_mapMarkers).forEach(m=>_map.removeLayer(m));
+  _mapMarkers={};
+  const list=_mapFilter?S.p.filter(p=>p.region===_mapFilter):S.p;
+  list.forEach(p=>{
+    const lat=parseFloat(p.lat),lng=parseFloat(p.lng);
+    if(isNaN(lat)||isNaN(lng)||(!lat&&!lng))return;
+    const bg=clr(p.id);
+    const initials=san(ini(p.name));
+    const icon=L.divIcon({
+      className:'',
+      html:`<div style="display:flex;flex-direction:column;align-items:center;cursor:pointer">
+        <div style="width:38px;height:38px;border-radius:50%;background:${bg};border:2.5px solid #fff;box-shadow:0 2px 10px rgba(24,20,15,.22);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;font-family:'Fraunces',serif;overflow:hidden">${p.photo?`<img src="${san(p.photo)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.style.display='none'">${initials}`:initials}</div>
+        <div style="width:1.5px;height:8px;background:${bg};opacity:.5;margin:0 auto"></div>
+        <div style="width:4px;height:4px;border-radius:50%;background:${bg};opacity:.5"></div>
+        <div style="margin-top:2px;font-size:9px;font-weight:600;background:rgba(255,255,255,.95);color:${bg};padding:1px 6px;border-radius:8px;white-space:nowrap;box-shadow:0 1px 4px rgba(24,20,15,.12);font-family:'DM Sans',sans-serif">${san(p.name.split(' ')[0])}</div>
+      </div>`,
+      iconSize:[80,70],iconAnchor:[40,58]
+    });
+    const m=L.marker([lat,lng],{icon}).addTo(_map).on('click',()=>openMapPanel(p.id));
+    _mapMarkers[p.id]=m;
+  });
+}
+
+function mapFilter(region){
+  _mapFilter=region;
+  // highlight active filter btn
+  document.getElementById('mf-sul')?.classList.toggle('acc',region==='Sul Global');
+  document.getElementById('mf-sul')?.classList.toggle('ghost',region!=='Sul Global');
+  document.getElementById('mf-norte')?.classList.toggle('acc',region==='Norte Global');
+  document.getElementById('mf-norte')?.classList.toggle('ghost',region!=='Norte Global');
+  rMapMarkers();
+  if(!region&&_map) _map.setView([15,10],2);
+}
+
+function openMapPanel(id){
+  const p=S.P(id); if(!p)return;
+  const panel=document.getElementById('map-panel');
+  const eps=S.e.filter(e=>(e.researchers||[]).includes(p.id));
+  document.getElementById('map-panel-name').textContent=p.name;
+  document.getElementById('map-panel-body').innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      ${pav(p,36)}
+      <div>
+        ${tbdg(p.type)}
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${san(p.org||'—')}</div>
+        <div style="font-size:11px;color:var(--terra);margin-top:1px">📍 ${san(p.city||'')}${p.city&&p.country?', ':''}${san(p.country||'')}</div>
+      </div>
+    </div>
+    ${p.bio?`<div style="font-size:12px;color:var(--ink3);line-height:1.55;margin-bottom:10px">${san(p.bio.substring(0,160))}${p.bio.length>160?'…':''}</div>`:''}
+    ${eps.length?`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--faint);margin-bottom:6px">Episódios</div>
+    ${eps.map(e=>`<div style="padding:6px 8px;background:var(--cream);border-radius:var(--r);margin-bottom:5px;cursor:pointer;font-size:12px;color:var(--ink2);transition:background .13s" onclick="go('eps',null);setTimeout(()=>selEp('${san(e.id)}'),80)" onmouseover="this.style.background='var(--terra-l)'" onmouseout="this.style.background='var(--cream)'">
+      <span style="font-family:var(--fm);font-size:10px;color:var(--terra)">Ep.${e.order} · ${san(e.month)} ${e.year}</span><br>${san(e.title)}</div>`).join('')}`:''}
+    <div style="margin-top:10px;display:flex;gap:6px">
+      <button class="btn ghost xs" style="flex:1" onclick="go('ppl',null);setTimeout(()=>openPModal('${san(id)}'),80);closeMapPanel()">Editar</button>
+    </div>`;
+  panel.classList.add('on');
+  // fly to marker
+  const lat=parseFloat(p.lat),lng=parseFloat(p.lng);
+  if(!isNaN(lat)&&!isNaN(lng)) _map.flyTo([lat,lng],5,{duration:.7});
+}
+
+function closeMapPanel(){
+  document.getElementById('map-panel')?.classList.remove('on');
+}
+
+// ══════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════
 function init(){
   S.load();
   rdash();
+  setTimeout(initMap,100);
   rEpList();
   rppl();
   ubadges();
