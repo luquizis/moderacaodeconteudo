@@ -674,22 +674,28 @@ const S = {
     d.episodes.forEach((e,i)=>{ if(typeof e.order!=='number') e.order=i+1; if(!e.published) e.published={title:'',subtitle:'',intro:'',body:'',keywords:''}; if(!Array.isArray(e.questions)) e.questions=[]; if(!Array.isArray(e.excerpts)) e.excerpts=[]; });
     return d;
   },
-  save(now=false){ this.dirty=true; clearTimeout(this._t); if(now) this._p(); else this._t=setTimeout(()=>this._p(),600); },
-  _p(){
+  save(now=false){
+    this.dirty=true;
+    clearTimeout(this._t);
+    // Always write to localStorage immediately (fast, no UI freeze)
     try{
-      const j=JSON.stringify(this.data);
-      localStorage.setItem(SK,j);
-      this.dirty=false;
+      localStorage.setItem(SK, JSON.stringify(this.data));
       const f=document.getElementById('sf');
-      if(f){f.classList.add('on');setTimeout(()=>f.classList.remove('on'),1800);}
-    }catch(e){ toast('Erro localStorage: '+e.message,'e'); }
-    sbWrite();
+      if(f){f.classList.add('on');setTimeout(()=>f.classList.remove('on'),1500);}
+    }catch(e){}
+    // Debounce Supabase write — 2s so typing doesn't trigger multiple writes
+    if(now) this._p();
+    else this._t=setTimeout(()=>this._p(), 2000);
+  },
+  _p(){
+    this.dirty=false;
+    sbWrite(); // async, non-blocking
   },
   get p(){ return this.data.people; },
   get e(){ return this.data.episodes.slice().sort((a,b)=>a.order-b.order); },
   P(id){ return this.p.find(x=>x.id===id); },
   E(id){ return this.data.episodes.find(x=>x.id===id); },
-  uE(id,f,v){ const e=this.E(id); if(e){e[f]=v;this.save();} },
+  uE(id,f,v){ const e=this.E(id); if(e){e[f]=v;this.save();} }, // data only, no re-render
   uP(id,f,v){ const p=this.P(id); if(p){p[f]=v;this.save();} },
   dE(id){ this.data.episodes=this.data.episodes.filter(e=>e.id!==id); this.data.episodes.sort((a,b)=>a.order-b.order).forEach((e,i)=>e.order=i+1); this.save(true); },
   dP(id){ this.data.people=this.p.filter(x=>x.id!==id); this.data.episodes.forEach(e=>{ e.researchers=(e.researchers||[]).filter(r=>r!==id); }); this.save(true); },
@@ -750,6 +756,12 @@ function go(id, el){
   if(id==='ppl') rppl();
   ubadges();
 }
+function updateEpStatusBadge(id, status){
+  // Update only the status badge in ep list without full re-render
+  const item=document.querySelector(`.ep-item[onclick*="${id}"] .stchip`);
+  if(item){ item.className='stchip st-'+status; item.textContent={pending:'Pendente',scheduled:'Agendado',done:'Realizado',published:'Publicado'}[status]||status; }
+}
+
 function ubadges(){
   document.getElementById('nb-ep-ct').textContent=S.e.length;
   document.getElementById('nb-ppl-ct').textContent=S.p.length;
@@ -872,35 +884,37 @@ function renderEpDetail(id){
   const res=(ep.researchers||[]).map(r=>S.P(r)).filter(Boolean);
 
   document.getElementById('ep-detail').innerHTML=`
-    <!-- header -->
+    <!-- header: inputs, no contenteditable -->
     <div class="ep-dh">
       <div class="ep-dh-top">
         <div class="ep-dh-num" style="background:${c}">${ep.order}</div>
-        <div style="flex:1">
-          <div class="ep-dh-title" contenteditable="true" id="ep-title-${san(id)}"
-            onblur="S.uE('${san(id)}','title',this.innerText.trim());rEpList()"
-            style="outline:none;cursor:text"
-            title="Clique para editar o título">${san(ep.title||'Sem título')}</div>
-          <div class="ep-dh-angle" contenteditable="true" id="ep-angle-${san(id)}"
-            onblur="S.uE('${san(id)}','angle',this.innerText.trim())"
-            style="outline:none;cursor:text"
-            title="Clique para editar o ângulo">${san(ep.angle||'Clique para adicionar o ângulo editorial…')}</div>
+        <div style="flex:1;min-width:0">
+          <input id="ep-title-${san(id)}" value="${san(ep.title||'')}"
+            placeholder="Título do episódio"
+            style="width:100%;font-family:var(--fh);font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.2px;border:none;background:transparent;outline:none;padding:0;margin-bottom:4px"
+            onchange="S.uE('${san(id)}','title',this.value);rEpList()">
+          <input id="ep-angle-${san(id)}" value="${san(ep.angle||'')}"
+            placeholder="Ângulo editorial…"
+            style="width:100%;font-size:12px;color:var(--muted);font-style:italic;border:none;background:transparent;outline:none;padding:0"
+            onchange="S.uE('${san(id)}','angle',this.value)">
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <select class="fsel" style="width:auto;font-size:12px;padding:5px 8px" onchange="S.uE('${san(id)}','status',this.value);renderEpDetail('${san(id)}')">
+          <select class="fsel" style="width:auto;font-size:12px;padding:5px 8px" onchange="S.uE('${san(id)}','status',this.value);updateEpStatusBadge('${san(id)}',this.value)">
             ${EST.map(v=>`<option value="${v}"${ep.status===v?' selected':''}>${EL[v]}</option>`).join('')}
           </select>
           <button class="btn danger xs" onclick="delEp('${san(id)}')">×</button>
         </div>
       </div>
-      <div class="ep-dh-meta">
+      <div class="ep-dh-meta" id="ep-meta-${san(id)}">
         <select class="fsel" style="width:auto;font-size:12px;padding:4px 8px" onchange="S.uE('${san(id)}','month',this.value)">
           ${MONTHS.map(m=>`<option${ep.month===m?' selected':''}>${m}</option>`).join('')}
         </select>
         <select class="fsel" style="width:auto;font-size:12px;padding:4px 8px" onchange="S.uE('${san(id)}','year',parseInt(this.value))">
           ${[2026,2027,2028].map(y=>`<option${ep.year===y?' selected':''}>${y}</option>`).join('')}
         </select>
-        ${Object.entries(TAGS).map(([k,v])=>`<span class="chip${(ep.tags||[]).includes(k)?' on':''}" style="background:${(ep.tags||[]).includes(k)?TC[k]+'18':'transparent'};color:${TC[k]};border-color:${(ep.tags||[]).includes(k)?TC[k]:'transparent'}" onclick="toggleTag('${san(id)}','${k}')">${v}</span>`).join('')}
+        <div id="ep-tags-${san(id)}" style="display:flex;flex-wrap:wrap;gap:4px">
+          ${Object.entries(TAGS).map(([k,v])=>`<span class="chip${(ep.tags||[]).includes(k)?' on':''}" style="background:${(ep.tags||[]).includes(k)?TC[k]+'18':'transparent'};color:${TC[k]};border-color:${(ep.tags||[]).includes(k)?TC[k]:'transparent'}" onclick="toggleTag('${san(id)}','${k}')">${v}</span>`).join('')}
+        </div>
       </div>
     </div>
     <!-- tabs -->
@@ -1063,8 +1077,25 @@ function renderEpTab(id){
 }
 
 // Episode actions
-function toggleTag(id,tag){ const e=S.E(id); if(!e)return; e.tags=e.tags||[]; e.tags=e.tags.includes(tag)?e.tags.filter(t=>t!==tag):[...new Set([...e.tags,tag])]; S.save(true); renderEpDetail(id); }
-function toggleRes(id,rid){ const e=S.E(id); if(!e)return; e.researchers=e.researchers||[]; e.researchers=e.researchers.includes(rid)?e.researchers.filter(r=>r!==rid):[...new Set([...e.researchers,rid])]; S.save(true); renderEpDetail(id); rEpList(); }
+function toggleTag(id,tag){
+  const e=S.E(id); if(!e)return;
+  e.tags=e.tags||[];
+  e.tags=e.tags.includes(tag)?e.tags.filter(t=>t!==tag):[...new Set([...e.tags,tag])];
+  S.save();
+  // Update only tag chips, no full re-render
+  const wrap=document.getElementById('ep-tags-'+id);
+  if(wrap) wrap.innerHTML=Object.entries(TAGS).map(([k,v])=>`<span class="chip${e.tags.includes(k)?' on':''}" style="background:${e.tags.includes(k)?TC[k]+'18':'transparent'};color:${TC[k]};border-color:${e.tags.includes(k)?TC[k]:'transparent'}" onclick="toggleTag('${id}','${k}')">${v}</span>`).join('');
+}
+function toggleRes(id,rid){
+  const e=S.E(id); if(!e)return;
+  e.researchers=e.researchers||[];
+  e.researchers=e.researchers.includes(rid)?e.researchers.filter(r=>r!==rid):[...new Set([...e.researchers,rid])];
+  S.save();
+  // Partial re-render: only the ficha tab content, not the whole detail
+  if(_epTab==='ficha') renderEpTab(id);
+  // Update ep list meta (researcher names)
+  rEpList();
+}
 function delEp(id){ const e=S.E(id); conf('Excluir episódio','Remover "'+e?.title+'"? Esta ação não pode ser desfeita.',()=>{ S.dE(id); _selEp=null; rEpList(); document.getElementById('ep-detail').innerHTML='<div class="ep-detail-empty"><span>Episódio removido</span></div>'; ubadges(); toast('Episódio removido','s'); }); }
 function addEp(){
   const maxOrd=Math.max(0,...S.data.episodes.map(e=>e.order||0));
@@ -1077,17 +1108,48 @@ function swapOrder(id,toOrder){ const e=S.E(id); const other=S.data.episodes.fin
 // questions
 S.uEarr = function(epId,field,idx,val){ const e=this.E(epId); if(e&&Array.isArray(e[field])){ e[field][idx]=val; this.save(); } };
 function autoH(t){ t.style.height='auto'; t.style.height=t.scrollHeight+'px'; }
-function addQ(id){ const inp=document.getElementById('nq-'+id); if(!inp?.value.trim())return; const e=S.E(id); if(!e.questions)e.questions=[]; e.questions.push(inp.value.trim()); inp.value=''; S.save(true); renderEpTab(id); }
-function delQ(id,i){ const e=S.E(id); if(!e)return; e.questions.splice(i,1); S.save(true); renderEpTab(id); }
+function addQ(id){
+  const inp=document.getElementById('nq-'+id);
+  if(!inp?.value.trim())return;
+  const e=S.E(id); if(!e.questions)e.questions=[];
+  e.questions.push(inp.value.trim());
+  inp.value='';
+  S.save();
+  renderEpTab(id); // only tab content, not header
+}
+function delQ(id,i){
+  const e=S.E(id); if(!e)return;
+  e.questions.splice(i,1);
+  S.save();
+  renderEpTab(id);
+}
 function clearQs(id){ conf('Limpar perguntas','Remover todas as perguntas deste roteiro?',()=>{ S.uE(id,'questions',[]); renderEpTab(id); toast('Perguntas removidas','s'); }); }
 function copyQ(id){ const e=S.E(id); if(!e)return; const txt=(e.questions||[]).map((q,i)=>`${i+1}. ${q}`).join('\n\n'); navigator.clipboard.writeText(txt).then(()=>toast('Copiado!','s')).catch(()=>toast('Erro ao copiar','e')); }
 
 // excerpts
-function addEx(id){ const t=document.getElementById('nex-t-'+id)?.value.trim(); if(!t)return; const sp=document.getElementById('nex-sp-'+id)?.value; const tag=document.getElementById('nex-tag-'+id)?.value; const e=S.E(id); if(!e.excerpts)e.excerpts=[]; e.excerpts.push({text:t,speaker:sp==='_outro'?'':sp,tag}); S.save(true); renderEpTab(id); }
-function delEx(id,i){ const e=S.E(id); if(!e)return; e.excerpts.splice(i,1); S.save(true); renderEpTab(id); }
+function addEx(id){
+  const t=document.getElementById('nex-t-'+id)?.value.trim(); if(!t)return;
+  const sp=document.getElementById('nex-sp-'+id)?.value;
+  const tag=document.getElementById('nex-tag-'+id)?.value;
+  const e=S.E(id); if(!e.excerpts)e.excerpts=[];
+  e.excerpts.push({text:t,speaker:sp==='_outro'?'':sp,tag});
+  S.save();
+  renderEpTab(id);
+}
+function delEx(id,i){
+  const e=S.E(id); if(!e)return;
+  e.excerpts.splice(i,1);
+  S.save();
+  renderEpTab(id);
+}
 
 // publication
-function upub(id,f,v){ const e=S.E(id); if(e){ if(!e.published)e.published={}; e.published[f]=v; S.save(); } }
+function upub(id,f,v){
+  const e=S.E(id); if(!e)return;
+  if(!e.published)e.published={};
+  e.published[f]=v;
+  S.save(); // no re-render — fields update in-place
+}
 function fmtPub(id,pre,pos){ const ta=document.getElementById('pub-ed-'+id); if(!ta)return; const s=ta.selectionStart,en=ta.selectionEnd,sel=ta.value.substring(s,en); ta.value=ta.value.substring(0,s)+pre+sel+pos+ta.value.substring(en); ta.focus(); ta.selectionStart=s+pre.length; ta.selectionEnd=s+pre.length+sel.length; upub(id,'body',ta.value); }
 function genPubStruct(id){ const e=S.E(id); if(!e)return; const b=(e.questions||[]).map(q=>`P: ${q}\n\nR: `).join('\n\n---\n\n')||'P: [Pergunta]\n\nR: '; upub(id,'body',b); const ta=document.getElementById('pub-ed-'+id); if(ta)ta.value=b; toast('Estrutura gerada','s'); }
 function cpPub(id){ const e=S.E(id); if(!e)return; const pub=e.published||{}; const txt=[pub.title||e.title,pub.subtitle||e.angle,'\n',pub.intro,'---\n',pub.body].filter(Boolean).join('\n').trim(); navigator.clipboard.writeText(txt).then(()=>toast('Copiado!','s')).catch(()=>toast('Erro','e')); }
@@ -1167,7 +1229,9 @@ function saveP(){
   const person={id,name,org:document.getElementById('pf-org').value.trim(),type:document.getElementById('pf-type').value,country:document.getElementById('pf-country').value.trim(),city:document.getElementById('pf-city').value.trim(),region:document.getElementById('pf-region').value,status:document.getElementById('pf-status').value,priority:document.getElementById('pf-prio').value,email:document.getElementById('pf-email').value.trim(),orcid:document.getElementById('pf-orcid').value.trim(),photo:document.getElementById('pf-photo').value.trim(),themes:document.getElementById('pf-themes').value.split(',').map(s=>s.trim()).filter(Boolean),bio:document.getElementById('pf-bio').value.trim(),pubs:document.getElementById('pf-pubs').value.trim(),notes:document.getElementById('pf-notes').value.trim(),lat:S.P(id)?.lat||0,lng:S.P(id)?.lng||0};
   if(_peid){ const i=S.p.findIndex(x=>x.id===_peid); if(i>=0)S.p[i]=person; }else S.p.push(person);
   S.save(true); closePModal(); rppl(); ubadges();
-  if(_selEp) renderEpDetail(_selEp); // refresh if in ep detail
+  // Only re-render ep detail if we're on the ficha tab (shows researcher info)
+  if(_selEp && _epTab==='ficha') renderEpTab(_selEp);
+  else if(_selEp) rEpList();
   toast(name+(_peid?' atualizado(a)':' cadastrado(a)'),'s');
 }
 function delP(id){ const p=S.P(id); conf('Excluir pessoa','Remover "'+p?.name+'"?',()=>{ S.dP(id); rppl(); ubadges(); if(_selEp) renderEpDetail(_selEp); toast('Removido(a)','s'); }); }
@@ -1240,12 +1304,12 @@ function renderMobEpTab(id, box){
         </div>
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin:16px 0 10px">Tags temáticas</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
-          ${Object.entries(TAGS).map(([k,v])=>`<span class="chip${(ep.tags||[]).includes(k)?' on':''}" style="background:${(ep.tags||[]).includes(k)?TC[k]+'18':'var(--cream2)'};color:${TC[k]};border-color:${(ep.tags||[]).includes(k)?TC[k]:'transparent'}" onclick="toggleTag('${san(id)}','${k}');renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">${v}</span>`).join('')}
+          ${Object.entries(TAGS).map(([k,v])=>`<span class="chip${(ep.tags||[]).includes(k)?' on':''}" style="background:${(ep.tags||[]).includes(k)?TC[k]+'18':'var(--cream2)'};color:${TC[k]};border-color:${(ep.tags||[]).includes(k)?TC[k]:'transparent'}" onclick="toggleTag('${san(id)}','${k}');mobRefreshTags('${san(id)}')">${v}</span>`).join('')}
         </div>
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:10px">Pesquisadores vinculados</div>
         ${res.map(p=>`<div class="pessoa-chip" style="margin-bottom:8px">
           ${pav(p,36)}<div style="flex:1;min-width:0"><div class="pessoa-chip-name">${san(p.name)}</div><div class="pessoa-chip-sub">${san(p.org||'')}</div></div>
-          <button class="btn danger xs" onclick="toggleRes('${san(id)}','${san(p.id)}');renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">×</button>
+          <button class="btn danger xs" onclick="toggleRes('${san(id)}','${san(p.id)}');renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">× </button>
         </div>`).join('')}
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin:12px 0 8px">Adicionar pesquisador</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
@@ -1326,11 +1390,18 @@ R: Resposta…" oninput="upub('${san(id)}','body',this.value)">${san(pub.body||'
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin:16px 0 8px">Reordenar na série</div>
       <div style="font-size:13px;color:var(--ink3);margin-bottom:10px">Posição atual: <strong>Ep. ${ep.order}</strong> de ${S.e.length}</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
-        ${S.e.filter(e=>e.id!==id).map(e=>`<button class="btn ghost sm" onclick="swapOrder('${san(id)}',${e.order});renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">↕ Ep.${e.order}</button>`).join('')}
+        ${S.e.filter(e=>e.id!==id).map(e=>`<button class="btn ghost sm" onclick="swapOrder('${san(id)}',${e.order});toast('Ordem atualizada','s')">↕ Ep.${e.order}</button>`).join('')}
       </div>
       <button class="btn danger" style="width:100%" onclick="if(confirm('Excluir episódio?')){mobEpClose();delEp('${san(id)}');}">Excluir episódio</button>
     </div>`;
   }
+}
+
+function mobRefreshTags(id){
+  // Update tag chips in mobile sheet without full re-render
+  const e=S.E(id); if(!e)return;
+  const wrap=document.querySelector('#mob-ep-content .mob-tags-wrap');
+  if(wrap) wrap.innerHTML=Object.entries(TAGS).map(([k,v])=>`<span class="chip${e.tags.includes(k)?' on':''}" style="background:${e.tags.includes(k)?TC[k]+'18':'var(--cream2)'};color:${TC[k]};border-color:${e.tags.includes(k)?TC[k]:'transparent'}" onclick="toggleTag('${id}','${k}');mobRefreshTags('${id}')">${v}</span>`).join('');
 }
 
 function mobAddQ(id){
@@ -1339,7 +1410,7 @@ function mobAddQ(id){
   const e = S.E(id); if(!e.questions)e.questions=[];
   e.questions.push(inp.value.trim());
   inp.value='';
-  S.save(true);
+  S.save();
   renderMobEpTab(id, document.getElementById('mob-ep-content'));
 }
 function mobAddEx(id){
@@ -1349,7 +1420,7 @@ function mobAddEx(id){
   const tag = document.getElementById('mob-nex-tag-'+id)?.value;
   const e = S.E(id); if(!e.excerpts)e.excerpts=[];
   e.excerpts.push({text:t, speaker:sp==='_outro'?'':sp, tag});
-  S.save(true);
+  S.save();
   renderMobEpTab(id, document.getElementById('mob-ep-content'));
 }
 function fmtMobPub(id,pre,pos){
@@ -1492,18 +1563,27 @@ function sbRealtime(){
     .subscribe(st=>{ if(st==='SUBSCRIBED')sbStat('ok','Realtime ativo'); if(st==='CHANNEL_ERROR')sbStat('err','Erro realtime'); });
 }
 
+let _sbWritePending=false, _sbWriteTimer=null;
 async function sbWrite(){
+  // Coalesce rapid writes — only write once per 1.5s max
   if(!_sbOn||!_sb)return;
-  sbStat('saving','Salvando…');
-  try{
-    const pr=await Promise.allSettled([
-      S.data.people.length?_sb.from('cm_people').upsert(S.data.people.map(p=>({id:p.id,name:p.name,org:p.org||'',type:p.type||'other',country:p.country||'',city:p.city||'',region:p.region||'',lat:p.lat||0,lng:p.lng||0,photo:p.photo||'',email:p.email||'',orcid:p.orcid||'',priority:p.priority||'média',status:p.status||'mapeado',bio:p.bio||'',pubs:p.pubs||'',themes:p.themes||[],notes:p.notes||''})),{onConflict:'id'}):Promise.resolve({error:null}),
-      S.data.episodes.length?_sb.from('cm_episodes').upsert(S.data.episodes.map(e=>({id:e.id,ep_order:e.order||1,year:e.year||2026,month:e.month||'Jan',title:e.title||'',angle:e.angle||'',status:e.status||'pending',tags:e.tags||[],researchers:e.researchers||[],notes:e.notes||'',questions:e.questions||[],excerpts:e.excerpts||[],published:e.published||{}})),{onConflict:'id'}):Promise.resolve({error:null}),
-    ]);
-    const errs=pr.filter(r=>r.status==='fulfilled'&&r.value?.error).map(r=>r.value.error.message);
-    if(errs.length){sbStat('err','Erro: '+errs[0]);toast('Erro Supabase: '+errs[0],'e');}
-    else{_sbLast=new Date();sbStat('ok','✓ Salvo · '+_sbLast.toLocaleTimeString('pt-BR'));}
-  }catch(e){sbStat('err','Erro: '+e.message);}
+  clearTimeout(_sbWriteTimer);
+  if(_sbWritePending)return;
+  _sbWritePending=true;
+  _sbWriteTimer=setTimeout(async()=>{
+    _sbWritePending=false;
+    sbStat('saving','Salvando…');
+    try{
+      const snap = JSON.parse(JSON.stringify(S.data)); // snapshot to avoid mid-write mutations
+      const pr=await Promise.allSettled([
+        snap.people.length?_sb.from('cm_people').upsert(snap.people.map(p=>({id:p.id,name:p.name,org:p.org||'',type:p.type||'other',country:p.country||'',city:p.city||'',region:p.region||'',lat:p.lat||0,lng:p.lng||0,photo:p.photo||'',email:p.email||'',orcid:p.orcid||'',priority:p.priority||'média',status:p.status||'mapeado',bio:p.bio||'',pubs:p.pubs||'',themes:p.themes||[],notes:p.notes||''})),{onConflict:'id'}):Promise.resolve({error:null}),
+        snap.episodes.length?_sb.from('cm_episodes').upsert(snap.episodes.map(e=>({id:e.id,ep_order:e.order||1,year:e.year||2026,month:e.month||'Jan',title:e.title||'',angle:e.angle||'',status:e.status||'pending',tags:e.tags||[],researchers:e.researchers||[],notes:e.notes||'',questions:e.questions||[],excerpts:e.excerpts||[],published:e.published||{}})),{onConflict:'id'}):Promise.resolve({error:null}),
+      ]);
+      const errs=pr.filter(r=>r.status==='fulfilled'&&r.value?.error).map(r=>r.value.error.message);
+      if(errs.length){sbStat('err','Erro: '+errs[0]);}
+      else{_sbLast=new Date();sbStat('ok','✓ Salvo · '+_sbLast.toLocaleTimeString('pt-BR'));}
+    }catch(e){sbStat('err','Erro: '+e.message);}
+  }, 1500);
 }
 
 async function sbSync(){ if(!_sbOn){await sbConnect();}else{sbStat('saving','Sincronizando…');await sbLoad();} }
