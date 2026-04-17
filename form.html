@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interviewee Profile · (Re)thinking Content Moderation Online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400;1,600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0f172a;--ink2:#1e293b;--ink3:#334155;
+  --muted:#64748b;--faint:#94a3b8;
+  --rule:#dde1f0;--rule2:#c7cee8;
+  --bg:#f8f7ff;--surface:#ffffff;
+  --terra:#5b21b6;--terra2:#4c1d95;--terra-l:#ede9fe;
+  --sage:#0369a1;--sage-l:#e0f2fe;
+  --danger:#aa1818;
+  --fh:'Playfair Display',Georgia,serif;
+  --fb:'Source Sans 3',system-ui,sans-serif;
+  --r:6px;--rlg:10px;
+}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;min-height:100vh;padding:0 0 4rem}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--rule2);border-radius:10px}
+
+.page-header{
+  background:#1e1b4b;
+  color:#fff;
+  padding:2.5rem 1.5rem 2rem;
+  margin-bottom:0;
+}
+.series-eyebrow{
+  font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;
+  color:rgba(255,255,255,.45);margin-bottom:1rem;
+  display:flex;align-items:center;gap:10px;
+}
+.series-eyebrow::before{content:'';display:inline-block;width:20px;height:0.5px;background:rgba(255,255,255,.35)}
+.page-title{
+  font-family:var(--fh);font-size:30px;font-weight:800;line-height:1.15;
+  color:#fff;margin-bottom:0.6rem;letter-spacing:-.3px;
+}
+.page-title em{font-style:italic;color:#c4b5fd}
+.page-desc{font-size:14px;color:rgba(255,255,255,.65);line-height:1.65;max-width:540px}
+
+.form-wrap{max-width:680px;margin:0 auto;padding:0 1.5rem}
+.form-section{padding:2rem 0 0}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem}
+.section-num{
+  width:22px;height:22px;border-radius:50%;
+  border:0.5px solid var(--rule2);
+  font-size:11px;font-weight:500;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:var(--surface);
+}
+.section-title{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
+.divider{flex:1;height:0.5px;background:var(--rule)}
+
+.fg{margin-bottom:1.1rem}
+.fl{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);display:block;margin-bottom:4px}
+.req{color:var(--danger);margin-left:1px}
+.hint{font-weight:400;color:var(--faint);font-size:11px}
+
+input[type=text],input[type=email],input[type=url],textarea,select{
+  width:100%;padding:9px 12px;
+  border:0.5px solid var(--rule2);border-radius:var(--r);
+  font-size:14px;font-family:var(--fb);background:var(--surface);color:var(--ink);
+  transition:border-color .13s,box-shadow .13s;outline:none;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:#7c3aed;
+  box-shadow:0 0 0 3px rgba(124,58,237,.09);
+}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+textarea{resize:vertical;line-height:1.6}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.g2{grid-template-columns:1fr}}
+
+.char-row{display:flex;justify-content:space-between;margin-top:4px}
+.char-hint{font-size:11px;color:var(--faint)}
+.char-count{font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums}
+
+.upload-zone{
+  position:relative;border:0.5px dashed var(--rule2);border-radius:var(--r);
+  padding:1.5rem 1rem;text-align:center;cursor:pointer;
+  background:var(--surface);overflow:hidden;transition:border-color .15s,background .15s;
+}
+.upload-zone:hover{border-color:#7c3aed}
+.upload-zone.has-file{border-style:solid;border-color:#0369a1;background:#e0f2fe}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{width:28px;height:28px;margin:0 auto 8px;color:var(--faint);display:block}
+.upload-text{font-size:13px;color:var(--ink3)}
+.upload-text strong{color:var(--ink);font-weight:500}
+.upload-formats{font-size:11px;color:var(--faint);margin-top:3px}
+.upload-filename{font-size:12.5px;color:#0369a1;font-weight:500;margin-top:6px}
+
+.consent-block{
+  background:var(--surface);border:0.5px solid var(--rule);
+  border-radius:var(--rlg);padding:1rem 1.25rem;
+  display:flex;flex-direction:column;gap:.85rem;margin-bottom:1.1rem;
+}
+.consent-item{display:flex;align-items:flex-start;gap:10px}
+input[type=checkbox]{width:15px;height:15px;margin-top:2px;flex-shrink:0;cursor:pointer;accent-color:#5b21b6}
+.consent-label{font-size:13px;color:var(--muted);line-height:1.55;cursor:pointer}
+.opt{font-size:11.5px;color:var(--faint)}
+
+.submit-btn{
+  width:100%;padding:12px 20px;
+  background:#5b21b6;color:#fff;
+  border:none;border-radius:var(--r);
+  font-family:var(--fb);font-size:14px;font-weight:500;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:opacity .15s,transform .1s;letter-spacing:.02em;
+}
+.submit-btn:hover{opacity:.88}
+.submit-btn:active{transform:scale(.996)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.error-msg{margin-top:10px;font-size:13px;color:var(--danger);display:none}
+
+.success-page{display:none;text-align:center;padding:4rem 1.5rem;max-width:500px;margin:0 auto}
+.success-check{width:52px;height:52px;margin:0 auto 1.25rem;display:block}
+.success-title{font-family:var(--fh);font-size:26px;color:var(--ink);margin-bottom:.5rem}
+.success-sub{font-size:14px;color:var(--muted);line-height:1.65}
+</style>
+</head>
+<body>
+
+<div id="mainContent">
+  <div style="background:#1e1b4b;padding:1.25rem 1.5rem;display:flex;align-items:center;gap:8px">
+    <span style="font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,.5)">(Re)thinking Content Moderation Online</span>
+    <span style="color:rgba(255,255,255,.2);font-size:10px">·</span>
+    <span style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,.3)">Digilabour / Infomedia / Creative Labours</span>
+  </div>
+
+  <div class="form-wrap">
+    <form id="profileForm" novalidate>
+
+      <!-- 1 -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-num">1</div>
+          <span class="section-title">Personal information</span>
+          <div class="divider"></div>
+        </div>
+        <div class="g2">
+          <div class="fg"><label class="fl">First name <span class="req">*</span></label><input type="text" id="pf-firstName" placeholder="Sarah" required></div>
+          <div class="fg"><label class="fl">Last name <span class="req">*</span></label><input type="text" id="pf-lastName" placeholder="Roberts" required></div>
+        </div>
+        <div class="fg"><label class="fl">Preferred name or pronouns <span class="hint">(optional)</span></label><input type="text" id="pf-pronomes" placeholder="e.g. she/her, Dr. Roberts"></div>
+        <div class="fg"><label class="fl">Email <span class="req">*</span></label><input type="email" id="pf-email-form" placeholder="your@institution.edu" required></div>
+      </div>
+
+      <!-- 2 -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-num">2</div>
+          <span class="section-title">Institutional affiliation</span>
+          <div class="divider"></div>
+        </div>
+        <div class="fg"><label class="fl">Current position / title <span class="req">*</span></label><input type="text" id="pf-cargo" placeholder="e.g. Full Professor" required></div>
+        <div class="g2">
+          <div class="fg"><label class="fl">Department(s) <span class="req">*</span></label><input type="text" id="pf-departamento" placeholder="e.g. Gender Studies, Information Studies" required></div>
+          <div class="fg"><label class="fl">Institution <span class="req">*</span></label><input type="text" id="pf-instituicao" placeholder="e.g. UCLA" required></div>
+        </div>
+        <div class="g2">
+          <div class="fg"><label class="fl">Country <span class="req">*</span></label><input type="text" id="pf-pais" placeholder="e.g. United States" required></div>
+          <div class="fg"><label class="fl">Website <span class="hint">(optional)</span></label><input type="url" id="pf-website" placeholder="https://"></div>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-num">3</div>
+          <span class="section-title">Bio &amp; research profile</span>
+          <div class="divider"></div>
+        </div>
+        <div class="fg">
+          <label class="fl">Short bio <span class="req">*</span> <span class="hint">— third person, 80–150 words</span></label>
+          <textarea id="pf-bio-form" rows="6" placeholder="Sarah T. Roberts is a full professor at UCLA..." maxlength="1200" required oninput="document.getElementById('pf-bioCount').textContent=this.value.length+' chars'"></textarea>
+          <div class="char-row">
+            <span class="char-hint">80–150 words recommended</span>
+            <span class="char-count" id="pf-bioCount">0 chars</span>
+          </div>
+        </div>
+        <div class="fg"><label class="fl">Key research areas <span class="hint">— separated by commas</span></label><input type="text" id="pf-areas" placeholder="e.g. content moderation, digital labor, platform governance"></div>
+        <div class="fg"><label class="fl">Selected publications <span class="hint">— up to 3, one per line</span></label><textarea id="pf-publicacoes" rows="4" placeholder="Roberts, S.T. (2019). Behind the Screen. Yale UP."></textarea></div>
+      </div>
+
+      <!-- 4 -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-num">4</div>
+          <span class="section-title">Photo</span>
+          <div class="divider"></div>
+        </div>
+        <div class="fg">
+          <label class="fl">Profile photo <span class="req">*</span> <span class="hint">— at least 800×800px</span></label>
+          <div class="upload-zone" id="pf-photoZone">
+            <input type="file" id="pf-photoFile" accept="image/jpeg,image/png,image/webp" required onchange="pfHandlePhoto(this)">
+            <svg class="upload-icon" viewBox="0 0 28 28" fill="none"><rect x="2" y="4" width="24" height="20" rx="3" stroke="currentColor" stroke-width="1.1"/><circle cx="9.5" cy="11.5" r="2.5" stroke="currentColor" stroke-width="1.1"/><path d="M2 20l6-5.5 4.5 4.5 4-3.5 9.5 7.5" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+            <p class="upload-text"><strong>Click to upload</strong> or drag and drop</p>
+            <p class="upload-formats">JPG, PNG or WEBP · max 10 MB</p>
+            <p class="upload-filename" id="pf-photoName"></p>
+          </div>
+        </div>
+        <div class="fg"><label class="fl">Photo credit <span class="hint">(optional)</span></label><input type="text" id="pf-creditoFoto" placeholder="e.g. Photo: Studio Bon"></div>
+      </div>
+
+      <!-- 5 -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-num">5</div>
+          <span class="section-title">Consent &amp; publishing preferences</span>
+          <div class="divider"></div>
+        </div>
+        <div class="consent-block">
+          <div class="consent-item">
+            <input type="checkbox" id="pf-c1" required>
+            <label class="consent-label" for="pf-c1">I authorize the publication of my interview, profile, and photo in English, Portuguese, and Spanish across Digilabour, Infomedia, and Creative Labours Creative Futures. <span class="req">*</span></label>
+          </div>
+          <div class="consent-item">
+            <input type="checkbox" id="pf-c2" required>
+            <label class="consent-label" for="pf-c2">I confirm that I will receive and approve the final transcript before publication. <span class="req">*</span></label>
+          </div>
+          <div class="consent-item">
+            <input type="checkbox" id="pf-c3">
+            <label class="consent-label" for="pf-c3">I consent to the interview being shared on social media by the publishing platforms. <span class="opt">(optional)</span></label>
+          </div>
+        </div>
+        <div class="fg"><label class="fl">Additional notes <span class="hint">(optional)</span></label><textarea id="pf-observacoes" rows="3" placeholder="Topics to avoid, embargo dates, accessibility needs…"></textarea></div>
+      </div>
+
+      <div style="margin-top:2rem;padding-bottom:2rem">
+        <button type="submit" class="submit-btn" id="pf-submitBtn">
+          <span id="pf-btnText">Submit information</span>
+          <span>→</span>
+          <div class="spinner" id="pf-spinner"></div>
+        </button>
+        <p class="error-msg" id="pf-errorMsg"></p>
+      </div>
+
+    </form>
+
+    <div class="success-page" id="pf-successPage">
+      <svg class="success-check" viewBox="0 0 52 52" fill="none">
+        <circle cx="26" cy="26" r="24" stroke="#0369a1" stroke-width="1.5"/>
+        <path d="M15 26l8 8 14-16" stroke="#0369a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h2 class="success-title">Thank you.</h2>
+      <p class="success-sub">Your information has been received.<br>We will send you the transcript for review before anything is published.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ngeogbbsvohgscyeqbvr.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZW9nYmJzdm9oZ3NjeWVxYnZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDk1NTcsImV4cCI6MjA5MDYyNTU1N30._ajMoa521ijfoFcSlLxH6htzGGZRRS32mzoLIWg7V5k';
+const PF_BUCKET    = 'entrevistados-fotos';
+const { createClient } = supabase;
+const _sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function pfHandlePhoto(input) {
+  const zone = document.getElementById('pf-photoZone');
+  const name = document.getElementById('pf-photoName');
+  if (input.files && input.files[0]) {
+    zone.classList.add('has-file');
+    name.textContent = input.files[0].name;
+  }
+}
+
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn     = document.getElementById('pf-submitBtn');
+  const spinner = document.getElementById('pf-spinner');
+  const btnTxt  = document.getElementById('pf-btnText');
+  const errMsg  = document.getElementById('pf-errorMsg');
+
+  const required = ['pf-firstName','pf-lastName','pf-email-form','pf-cargo','pf-departamento','pf-instituicao','pf-pais','pf-bio-form'];
+  for (const id of required) {
+    if (!document.getElementById(id)?.value.trim()) {
+      document.getElementById(id)?.focus();
+      errMsg.textContent = 'Please fill in all required fields.';
+      errMsg.style.display = 'block';
+      return;
+    }
+  }
+  if (!document.getElementById('pf-c1').checked || !document.getElementById('pf-c2').checked) {
+    errMsg.textContent = 'Please accept the required consent items.';
+    errMsg.style.display = 'block';
+    return;
+  }
+  const photoFile = document.getElementById('pf-photoFile');
+  if (!photoFile?.files[0]) {
+    errMsg.textContent = 'Please upload a profile photo.';
+    errMsg.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btnTxt.textContent = 'Uploading…';
+  spinner.style.display = 'block';
+  errMsg.style.display = 'none';
+
+  try {
+    const file = photoFile.files[0];
+    const ext  = file.name.split('.').pop();
+    const slug = document.getElementById('pf-lastName').value.toLowerCase().replace(/\s+/g,'-');
+    const path = slug + '-' + Date.now() + '.' + ext;
+
+    const { error: uploadError } = await _sb.storage.from(PF_BUCKET).upload(path, file, { cacheControl:'3600', upsert:false });
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = _sb.storage.from(PF_BUCKET).getPublicUrl(path);
+
+    const { error: insertError } = await _sb.from('entrevistados').insert([{
+      primeiro_nome:      document.getElementById('pf-firstName').value.trim(),
+      ultimo_nome:        document.getElementById('pf-lastName').value.trim(),
+      pronomes:           document.getElementById('pf-pronomes').value.trim() || null,
+      email:              document.getElementById('pf-email-form').value.trim(),
+      cargo:              document.getElementById('pf-cargo').value.trim(),
+      departamento:       document.getElementById('pf-departamento').value.trim(),
+      instituicao:        document.getElementById('pf-instituicao').value.trim(),
+      pais:               document.getElementById('pf-pais').value.trim(),
+      website:            document.getElementById('pf-website').value.trim() || null,
+      bio:                document.getElementById('pf-bio-form').value.trim(),
+      areas_pesquisa:     document.getElementById('pf-areas').value.trim() || null,
+      publicacoes:        document.getElementById('pf-publicacoes').value.trim() || null,
+      foto_url:           urlData.publicUrl,
+      credito_foto:       document.getElementById('pf-creditoFoto').value.trim() || null,
+      consent_publicacao: document.getElementById('pf-c1').checked,
+      consent_transcript: document.getElementById('pf-c2').checked,
+      consent_redes:      document.getElementById('pf-c3').checked,
+      observacoes:        document.getElementById('pf-observacoes').value.trim() || null,
+    }]);
+    if (insertError) throw insertError;
+
+    document.getElementById('mainContent').querySelector('form').style.display = 'none';
+    document.getElementById('pf-successPage').style.display = 'block';
+
+  } catch (err) {
+    console.error('[FORM]', err);
+    errMsg.textContent = 'Something went wrong: ' + err.message;
+    errMsg.style.display = 'block';
+    btn.disabled = false;
+    btnTxt.textContent = 'Submit information';
+    spinner.style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>
