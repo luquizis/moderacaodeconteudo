@@ -3,45 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Content Moderation in AI · DigiLabour</title>
+<title>(Re)thinking Content Moderation Online · DigiLabour</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,500;1,9..144,700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,800;0,900;1,400;1,600;1,800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root {
-  --cream:   #f5f1ea;
-  --cream2:  #ede8df;
-  --cream3:  #e4ddd2;
-  --ink:     #18140f;
-  --ink2:    #2c2820;
-  --ink3:    #46403a;
-  --muted:   #78726a;
-  --faint:   #a89e96;
-  --rule:    #d4ccc0;
-  --rule2:   #c4bbb0;
+  --cream:   #f8f7ff;
+  --cream2:  #eff0fb;
+  --cream3:  #e0e2f5;
+  --ink:     #0f172a;
+  --ink2:    #1e293b;
+  --ink3:    #334155;
+  --muted:   #64748b;
+  --faint:   #94a3b8;
+  --rule:    #dde1f0;
+  --rule2:   #c7cee8;
 
-  --terra:   #c03d0a;
-  --terra2:  #9c3108;
-  --terra-l: #fceee6;
-  --terra-m: rgba(192,61,10,.1);
+  --terra:   #5b21b6;
+  --terra2:  #4c1d95;
+  --terra-l: #ede9fe;
+  --terra-m: rgba(91,33,182,.1);
 
-  --sage:    #2f5e3f;
-  --sage-l:  #e5f0e9;
-  --slate:   #244060;
-  --slate-l: #e4ecf5;
-  --gold:    #8c5e08;
-  --gold-l:  #faf0cc;
-  --violet:  #522e8c;
-  --violet-l:#f0ebff;
-  --teal:    #155a52;
-  --teal-l:  #e2f3f1;
+  --sage:    #0369a1;
+  --sage-l:  #e0f2fe;
+  --slate:   #1d4ed8;
+  --slate-l: #dbeafe;
+  --gold:    #7c3aed;
+  --gold-l:  #f3e8ff;
+  --violet:  #7e22ce;
+  --violet-l:#faf5ff;
+  --teal:    #0284c7;
+  --teal-l:  #e0f2fe;
   --danger:  #aa1818;
   --danger-l:#fef0f0;
 
-  --fh:'Fraunces',Georgia,serif;
-  --fb:'DM Sans',system-ui,sans-serif;
+  --fh:'Playfair Display',Georgia,serif;
+  --fb:'Source Sans 3',system-ui,sans-serif;
   --fm:'DM Mono',monospace;
 
   --r:6px; --rlg:10px; --rxl:16px; --r2x:22px;
@@ -114,7 +113,7 @@ html,body{height:100%;background:var(--cream);color:var(--ink);font-family:var(-
 .page.on{display:flex}
 
 /* ══ SYNC BAR ══ */
-#syncbar{position:fixed;bottom:0;left:0;right:0;height:26px;background:var(--ink2);color:rgba(255,255,255,.55);display:none;align-items:center;padding:0 14px;font-size:11px;font-family:var(--fm);z-index:400;gap:8px;letter-spacing:.15px}
+#syncbar{position:fixed;bottom:0;left:0;right:0;height:26px;background:#1e293b;color:rgba(255,255,255,.55);display:none;align-items:center;padding:0 14px;font-size:11px;font-family:var(--fm);z-index:400;gap:8px;letter-spacing:.15px}
 #syncbar.on{display:flex}
 .sdot{width:6px;height:6px;border-radius:50%;background:#2f5e3f;flex-shrink:0}
 .sdot.pulse{animation:sp 2s infinite}
@@ -192,7 +191,7 @@ textarea.fta{resize:vertical;line-height:1.55}
 .ep-item-title{font-size:13px;font-weight:500;color:var(--ink);line-height:1.3;margin-bottom:3px}
 .ep-item-meta{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 
-/* episode detail — the hub */
+/* episoof detail — the hub */
 .ep-detail{flex:1;overflow:hidden;display:flex;flex-direction:column}
 .ep-detail-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:13px;flex-direction:column;gap:10px}
 
@@ -232,7 +231,7 @@ textarea.fta{resize:vertical;line-height:1.55}
 .add-inp:focus{border-color:var(--terra)}
 .add-inp::placeholder{color:var(--faint)}
 
-/* ── TAB: Trechos ── */
+/* ── TAB: Excerpts ── */
 .ex-item{background:#fff;border:1px solid var(--rule);border-left:3px solid var(--terra);border-radius:0 var(--r) var(--r) 0;padding:11px 13px;margin-bottom:9px;transition:box-shadow .13s}
 .ex-item:hover{box-shadow:var(--s1)}
 .ex-meta{font-size:11px;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
@@ -292,7 +291,7 @@ textarea.fta{resize:vertical;line-height:1.55}
 /* ══ DASHBOARD MAP ══ */
 .dash-map-wrap{margin-bottom:18px;border-radius:var(--rlg);overflow:hidden;border:1px solid var(--rule);box-shadow:var(--sc);position:relative}
 #dash-map{height:360px;background:var(--cream2)}
-.leaflet-container{background:#e8e2d6;font-family:var(--fb)}
+.leaflet-container{background:#eef0f8;font-family:var(--fb)}
 .map-panel{position:absolute;top:10px;right:10px;z-index:800;background:#fff;border:1px solid var(--rule);border-radius:var(--rlg);box-shadow:var(--s2);width:240px;max-height:320px;display:none;flex-direction:column;overflow:hidden}
 .map-panel.on{display:flex}
 .map-panel-h{padding:10px 12px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:8px;flex-shrink:0}
@@ -301,16 +300,16 @@ textarea.fta{resize:vertical;line-height:1.55}
 .map-panel-close:hover{color:var(--ink)}
 
 /* ══ MOBILE ══ */
-#mob-ham{display:none;position:fixed;top:10px;left:12px;z-index:210;width:38px;height:38px;border-radius:var(--r);background:var(--ink);border:none;cursor:pointer;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+#mob-ham{display:none;position:fixed;top:10px;left:12px;z-index:210;width:38px;height:38px;border-radius:var(--r);background:#1e1b4b;border:none;cursor:pointer;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 #mob-ham svg{width:17px;height:17px;color:rgba(255,255,255,.7)}
 #mob-overlay{display:none;position:fixed;inset:0;background:rgba(24,20,15,.6);z-index:149;backdrop-filter:blur(2px);opacity:0;transition:opacity .22s}
 #mob-overlay.on{opacity:1}
-#mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--mob-nav-h);background:var(--ink);border-top:1px solid rgba(255,255,255,.07);z-index:200;align-items:stretch}
+#mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--mob-nav-h);background:#1e1b4b;border-top:1px solid rgba(255,255,255,.07);z-index:200;align-items:stretch}
 .mni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;background:none;border:none;color:rgba(255,255,255,.38);font-family:var(--fb);font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;-webkit-tap-highlight-color:transparent;transition:color .13s}
 .mni svg{width:19px;height:19px;opacity:.45;transition:opacity .13s}
 .mni.on{color:var(--terra)}
 .mni.on svg{opacity:1}
-#mob-more-sheet{display:none;position:fixed;bottom:var(--mob-nav-h);left:0;right:0;background:var(--ink);border-top:1px solid rgba(255,255,255,.07);z-index:201;transform:translateY(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);padding:6px 0 4px}
+#mob-more-sheet{display:none;position:fixed;bottom:var(--mob-nav-h);left:0;right:0;background:#1e1b4b;border-top:1px solid rgba(255,255,255,.07);z-index:201;transform:translateY(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);padding:6px 0 4px}
 #mob-more-sheet.on{transform:translateY(0)}
 .mmi{display:flex;align-items:center;gap:13px;padding:13px 18px;color:rgba(255,255,255,.5);font-size:14px;font-weight:500;cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:var(--fb);-webkit-tap-highlight-color:transparent;transition:color .13s}
 .mmi svg{width:17px;height:17px;opacity:.5;flex-shrink:0}
@@ -325,7 +324,7 @@ textarea.fta{resize:vertical;line-height:1.55}
   .dash-map-wrap>#dash-map{display:none}
 }
 
-/* ── Mobile episode detail sheet ── */
+/* ── Mobile episoof detail sheet ── */
 #mob-ep-sheet{
   display:none;position:fixed;inset:0;z-index:300;
   background:var(--cream);flex-direction:column;overflow:hidden;
@@ -431,37 +430,41 @@ textarea.fta{resize:vertical;line-height:1.55}
 <nav id="mob-nav">
   <button class="mni on" id="mni-dash" onclick="go('dash',this)">
     <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".6"/></svg>
-    <span>Início</span>
+    <span>Home</span>
   </button>
   <button class="mni" id="mni-eps" onclick="go('eps',this)">
     <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-    <span>Episódios</span>
+    <span>Episodes</span>
   </button>
   <button class="mni" id="mni-ppl" onclick="go('ppl',this)">
     <svg viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="4" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M12 8c1.8.3 3 1.2 3 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-    <span>Atores</span>
+    <span>Actors</span>
+  </button>
+  <button class="mni" id="mni-form" onclick="go('form',this)">
+    <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+    <span>Profile</span>
   </button>
   <button class="mni" id="mni-more" onclick="mobMore()">
     <svg viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/></svg>
-    <span>Mais</span>
+    <span>More</span>
   </button>
 </nav>
 
 <div id="mob-more-sheet">
   <button class="mmi" onclick="go('dash',null);mobMoreClose()"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor"/></svg>Dashboard</button>
-  <button class="mmi" onclick="go('eps',null);mobMoreClose()"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/></svg>Episódios</button>
-  <button class="mmi" onclick="go('ppl',null);mobMoreClose()"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/></svg>Pesquisadores & Atores</button>
+  <button class="mmi" onclick="go('eps',null);mobMoreClose()"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/></svg>Episodes</button>
+  <button class="mmi" onclick="go('ppl',null);mobMoreClose()"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/></svg>Researchers & Actors</button>
 </div>
 
-<!-- Mobile episode detail sheet -->
+<!-- Mobile episoof detail sheet -->
 <div id="mob-ep-sheet">
   <div class="mob-ep-bar">
     <button class="mob-back" onclick="mobEpClose()">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 3L5 8l5 5"/></svg>
-      Episódios
+      Episodes
     </button>
     <div id="mob-ep-title" style="flex:1;font-family:var(--fh);font-size:14px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 8px"></div>
-    <button class="btn acc xs" onclick="S.save(true)">Salvar</button>
+    <button class="btn acc xs" onclick="S.save(true)">Save</button>
   </div>
   <div class="mob-ep-tabs-wrap" id="mob-ep-tabs"></div>
   <div class="mob-ep-content" id="mob-ep-content"></div>
@@ -474,7 +477,7 @@ textarea.fta{resize:vertical;line-height:1.55}
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M10 3L5 8l5 5"/></svg>
       Dashboard
     </button>
-    <div style="flex:1;font-family:var(--fh);font-size:14px;font-weight:700;color:var(--ink);margin-left:8px">Mapa de atores</div>
+    <div style="flex:1;font-family:var(--fh);font-size:14px;font-weight:700;color:var(--ink);margin-left:8px">Mapa of actores</div>
   </div>
   <div id="mob-map"></div>
   <div class="map-panel" id="mob-map-panel" style="position:absolute;top:60px;left:10px;right:10px;width:auto;max-height:60%;display:none;flex-direction:column">
@@ -490,32 +493,36 @@ textarea.fta{resize:vertical;line-height:1.55}
       <svg width="34" height="34" viewBox="0 0 36 36" fill="none">
         <circle cx="18" cy="18" r="16" stroke="rgba(255,255,255,.12)" stroke-width="1"/>
         <path d="M6 18C6 18 11 9 18 9C25 9 30 18 30 18C30 18 25 27 18 27C11 27 6 18 6 18Z" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1.2"/>
-        <circle cx="18" cy="18" r="4.5" fill="#c03d0a"/>
+        <circle cx="18" cy="18" r="4.5" fill="#a78bfa"/>
         <line x1="6" y1="15" x2="30" y2="15" stroke="rgba(255,255,255,.12)" stroke-width=".7"/>
         <line x1="6" y1="18" x2="30" y2="18" stroke="rgba(255,255,255,.12)" stroke-width=".7"/>
         <line x1="6" y1="21" x2="30" y2="21" stroke="rgba(255,255,255,.12)" stroke-width=".7"/>
-        <line x1="13" y1="13" x2="23" y2="23" stroke="#c03d0a" stroke-width="1.7" stroke-linecap="round" opacity=".65"/>
+        <line x1="13" y1="13" x2="23" y2="23" stroke="#a78bfa" stroke-width="1.7" stroke-linecap="round" opacity=".65"/>
       </svg>
       <div>
-        <div class="sb-wordmark">Content Moderation<br><em>in AI</em></div>
+        <div class="sb-wordmark">(Re)thinking<br><em>Content Moderation</em></div>
       </div>
     </div>
     <div class="sb-edition">DigiLabour · 2026–2027</div>
   </div>
   <div class="sb-nav">
-    <div class="sb-section">Visão geral</div>
+    <div class="sb-section">Overview</div>
     <button class="nb on" id="nb-dash" onclick="go('dash',this)">
       <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".6"/></svg>
       Dashboard
     </button>
-    <div class="sb-section" style="margin-top:4px">Produção</div>
+    <div class="sb-section" style="margin-top:4px">Production</div>
     <button class="nb" id="nb-eps" onclick="go('eps',this)">
       <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-      Episódios <span class="nbadge" id="nb-ep-ct">0</span>
+      Episodes <span class="nbadge" id="nb-ep-ct">0</span>
     </button>
     <button class="nb" id="nb-ppl" onclick="go('ppl',this)">
       <svg viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="4.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="4" r="2" stroke="currentColor" stroke-width="1.2"/><path d="M12 8c1.8.3 3 1.2 3 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-      Pesquisadores & Atores <span class="nbadge" id="nb-ppl-ct">0</span>
+      Researchers & Actors <span class="nbadge" id="nb-ppl-ct">0</span>
+    </button>
+    <button class="nb" id="nb-form" onclick="go('form',this)">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h6M5 9h4M5 12h3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+      Perfil of interviewed
     </button>
   </div>
   <div class="sb-foot">
@@ -530,8 +537,8 @@ textarea.fta{resize:vertical;line-height:1.55}
   <div id="topbar">
     <div class="tb-title" id="tb-title">Dashboard</div>
     <div class="tb-right">
-      <span class="saved-flag" id="sf">Salvo</span>
-      <button class="btn acc" onclick="S.save(true)">Salvar</button>
+      <span class="saved-flag" id="sf">Saved</span>
+      <button class="btn acc" onclick="S.save(true)">Save</button>
     </div>
   </div>
 
@@ -542,19 +549,19 @@ textarea.fta{resize:vertical;line-height:1.55}
 
   <!-- EPISODES — hub page -->
   <div class="page" id="page-eps">
-    <!-- left: episode list -->
+    <!-- left: episoof list -->
     <div class="ep-list-col">
       <div class="ep-list-head">
-        <h2>Episódios</h2>
-        <button class="btn acc sm" onclick="addEp()">+ Novo</button>
+        <h2>Episodes</h2>
+        <button class="btn acc sm" onclick="addEp()">+ New</button>
       </div>
       <div class="ep-list" id="ep-list"></div>
     </div>
-    <!-- right: episode detail (hub) -->
+    <!-- right: episoof detail (hub) -->
     <div class="ep-detail" id="ep-detail">
       <div class="ep-detail-empty">
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><rect x="4" y="6" width="28" height="24" rx="3" stroke="#c4bbb0" stroke-width="1.5"/><path d="M10 14h16M10 19h10" stroke="#c4bbb0" stroke-width="1.3" stroke-linecap="round"/></svg>
-        <span>Selecione um episódio</span>
+        <span>Select an episode</span>
       </div>
     </div>
   </div>
@@ -562,23 +569,163 @@ textarea.fta{resize:vertical;line-height:1.55}
   <!-- PEOPLE -->
   <div class="page" id="page-ppl" style="flex-direction:column;overflow-y:auto">
     <div class="ppl-bar">
-      <input class="fi" id="ppl-q" placeholder="Buscar nome, org, país…" oninput="rppl()" style="max-width:320px">
+      <input class="fi" id="ppl-q" placeholder="Search name, org, country…" oninput="rppl()" style="max-width:320px">
       <div id="ppl-filters" style="display:flex;gap:4px;flex-wrap:wrap"></div>
-      <div style="margin-left:auto"><button class="btn acc sm" onclick="openPModal()">+ Cadastrar</button></div>
+      <div style="margin-left:auto"><button class="btn acc sm" onclick="openPModal()">+ Register</button></div>
     </div>
     <div class="ppl-grid" id="ppl-grid"></div>
   </div>
+
+    <!-- ══ FORM PAGE ══ -->
+    <div class="page" id="page-form" style="flex-direction:column;overflow-y:auto;background:var(--cream)">
+      <div style="max-width:680px;margin:0 auto;width:100%;padding:0 0 4rem">
+
+        <div style="border-bottom:0.5px solid var(--rule);padding:2rem 1.5rem 1.75rem">
+          <p style="font-size:10.5px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;display:flex;align-items:center;gap:8px">
+            <span style="display:inline-block;width:18px;height:0.5px;background:var(--muted)"></span>
+            Interview Series · Digilabour / Infomedia / Creative Labours Creative Futures
+          </p>
+          <h1 style="font-family:var(--fh);font-size:26px;font-weight:400;line-height:1.2;color:var(--ink);margin-bottom:0.5rem">
+            The Next Frontier of<br><em>Content Moderation Research</em>
+          </h1>
+          <p style="font-size:14px;color:var(--muted);line-height:1.65;max-width:520px">
+            Please fill in your information below. It will be used to build your author profile, published alongsiof the interview in English, Portuguese, and Spanish.
+          </p>
+        </div>
+
+        <form id="profileForm" novalidate style="padding:0 1.5rem">
+
+          <!-- Section 1 -->
+          <div style="padding:2rem 0 0">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+              <div style="width:22px;height:22px;border-radius:50%;border:0.5px solid var(--rule);font-size:11px;font-weight:500;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+              <span style="font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)">Personal information</span>
+              <div style="flex:1;height:0.5px;background:var(--rule)"></div>
+            </div>
+            <div class="g2">
+              <div class="fg"><label class="fl">First name <span style="color:var(--danger)">*</span></label><input class="fi" id="pf-firstName" placeholder="Sarah" required></div>
+              <div class="fg"><label class="fl">Last name <span style="color:var(--danger)">*</span></label><input class="fi" id="pf-lastName" placeholder="Roberts" required></div>
+            </div>
+            <div class="fg"><label class="fl">Preferred name or pronouns <span style="color:var(--faint);font-weight:400">(optional)</span></label><input class="fi" id="pf-pronomes" placeholder="e.g. she/her, Dr. Roberts"></div>
+            <div class="fg"><label class="fl">Email <span style="color:var(--danger)">*</span></label><input class="fi" type="email" id="pf-email-form" placeholder="your@institution.edu" required></div>
+          </div>
+
+          <!-- Section 2 -->
+          <div style="padding:2rem 0 0">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+              <div style="width:22px;height:22px;border-radius:50%;border:0.5px solid var(--rule);font-size:11px;font-weight:500;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+              <span style="font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)">Institutional affiliation</span>
+              <div style="flex:1;height:0.5px;background:var(--rule)"></div>
+            </div>
+            <div class="fg"><label class="fl">Current position / title <span style="color:var(--danger)">*</span></label><input class="fi" id="pf-cargo" placeholder="e.g. Full Professor" required></div>
+            <div class="g2">
+              <div class="fg"><label class="fl">Department(s) <span style="color:var(--danger)">*</span></label><input class="fi" id="pf-departamento" placeholder="e.g. Gender Studies, Information Studies" required></div>
+              <div class="fg"><label class="fl">Institution <span style="color:var(--danger)">*</span></label><input class="fi" id="pf-instituicao" placeholder="e.g. UCLA" required></div>
+            </div>
+            <div class="g2">
+              <div class="fg"><label class="fl">Country <span style="color:var(--danger)">*</span></label><input class="fi" id="pf-pais" placeholder="e.g. United States" required></div>
+              <div class="fg"><label class="fl">Website <span style="color:var(--faint);font-weight:400">(optional)</span></label><input class="fi" type="url" id="pf-website" placeholder="https://"></div>
+            </div>
+          </div>
+
+          <!-- Section 3 -->
+          <div style="padding:2rem 0 0">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+              <div style="width:22px;height:22px;border-radius:50%;border:0.5px solid var(--rule);font-size:11px;font-weight:500;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+              <span style="font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)">Bio &amp; research profile</span>
+              <div style="flex:1;height:0.5px;background:var(--rule)"></div>
+            </div>
+            <div class="fg">
+              <label class="fl">Short bio <span style="color:var(--danger)">*</span> <span style="color:var(--faint);font-weight:400">— third person, 80–150 words</span></label>
+              <textarea class="fta" id="pf-bio-form" rows="6" placeholder="Sarah T. Roberts is a full professor at UCLA..." maxlength="1200" required oninput="document.getElementById('pf-bioCount').textContent=this.value.length+' chars'"></textarea>
+              <div style="display:flex;justify-content:space-between;margin-top:4px">
+                <span style="font-size:11px;color:var(--faint)">80–150 words recommended</span>
+                <span style="font-size:11px;color:var(--faint);font-family:var(--fm)" id="pf-bioCount">0 chars</span>
+              </div>
+            </div>
+            <div class="fg"><label class="fl">Key research areas <span style="color:var(--faint);font-weight:400">— separated by commas</span></label><input class="fi" id="pf-areas" placeholder="e.g. content moderation, digital labor, platform governance"></div>
+            <div class="fg"><label class="fl">Selected publications <span style="color:var(--faint);font-weight:400">— up to 3, one per line</span></label><textarea class="fta" id="pf-publicacoes" rows="4" placeholder="Roberts, S.T. (2019). Behind the Screen. Yale UP."></textarea></div>
+          </div>
+
+          <!-- Section 4 -->
+          <div style="padding:2rem 0 0">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+              <div style="width:22px;height:22px;border-radius:50%;border:0.5px solid var(--rule);font-size:11px;font-weight:500;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+              <span style="font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)">Photo</span>
+              <div style="flex:1;height:0.5px;background:var(--rule)"></div>
+            </div>
+            <div class="fg">
+              <label class="fl">Profile photo <span style="color:var(--danger)">*</span> <span style="color:var(--faint);font-weight:400">— at least 800×800px, JPG or PNG</span></label>
+              <div id="pf-photoZone" style="position:relative;border:0.5px dashed var(--rule2);border-radius:var(--r);padding:1.5rem 1rem;text-align:center;cursor:pointer;background:#fff;overflow:hidden" onmouseover="this.style.borderColor='var(--terra)'" onmouseout="if(!document.getElementById('pf-photoFile').files[0])this.style.borderColor='var(--rule2)'">
+                <input type="file" id="pf-photoFile" accept="image/jpeg,image/png,image/webp" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none;padding:0" required onchange="pfHandlePhoto(this)">
+                <svg style="width:28px;height:28px;margin:0 auto 8px;color:var(--faint);display:block" viewBox="0 0 28 28" fill="none"><rect x="2" y="4" width="24" height="20" rx="3" stroke="currentColor" stroke-width="1.1"/><circle cx="9.5" cy="11.5" r="2.5" stroke="currentColor" stroke-width="1.1"/><path d="M2 20l6-5.5 4.5 4.5 4-3.5 9.5 7.5" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+                <p style="font-size:13px;color:var(--ink3)"><strong>Click to upload</strong> or drag and drop</p>
+                <p style="font-size:11px;color:var(--faint);margin-top:3px">JPG, PNG or WEBP · max 10 MB</p>
+                <p style="font-size:12.5px;color:var(--sage);font-weight:500;margin-top:6px" id="pf-photoName"></p>
+              </div>
+            </div>
+            <div class="fg"><label class="fl">Photo credit <span style="color:var(--faint);font-weight:400">(optional)</span></label><input class="fi" id="pf-creditoFoto" placeholder="e.g. Photo: Studio Bon"></div>
+          </div>
+
+          <!-- Section 5 -->
+          <div style="padding:2rem 0 0">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+              <div style="width:22px;height:22px;border-radius:50%;border:0.5px solid var(--rule);font-size:11px;font-weight:500;color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0">5</div>
+              <span style="font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)">Consent &amp; publishing preferences</span>
+              <div style="flex:1;height:0.5px;background:var(--rule)"></div>
+            </div>
+            <div style="background:#fff;border:1px solid var(--rule);border-radius:var(--rlg);padding:1rem 1.25rem;display:flex;flex-direction:column;gap:0.85rem;margin-bottom:1.1rem">
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <input type="checkbox" id="pf-c1" style="width:15px;height:15px;margin-top:2px;flex-shrink:0;accent-color:var(--ink)" required>
+                <label for="pf-c1" style="font-size:13px;color:var(--muted);line-height:1.55;cursor:pointer">I authorize the publication of my interview, profile, and photo in English, Portuguese, and Spanish across Digilabour, Infomedia, and Creative Labours Creative Futures. <span style="color:var(--danger)">*</span></label>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <input type="checkbox" id="pf-c2" style="width:15px;height:15px;margin-top:2px;flex-shrink:0;accent-color:var(--ink)" required>
+                <label for="pf-c2" style="font-size:13px;color:var(--muted);line-height:1.55;cursor:pointer">I confirm that I will receive and approve the final transcript before publication. <span style="color:var(--danger)">*</span></label>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <input type="checkbox" id="pf-c3" style="width:15px;height:15px;margin-top:2px;flex-shrink:0;accent-color:var(--ink)">
+                <label for="pf-c3" style="font-size:13px;color:var(--muted);line-height:1.55;cursor:pointer">I consent to the interview being shared on social media by the publishing platforms. <span style="font-size:11.5px;color:var(--faint)">(optional)</span></label>
+              </div>
+            </div>
+            <div class="fg"><label class="fl">Additional notes <span style="color:var(--faint);font-weight:400">(optional)</span></label><textarea class="fta" id="pf-observacoes" rows="3" placeholder="Topics to avoid, embargo dates, accessibility needs…"></textarea></div>
+          </div>
+
+          <div style="margin-top:2rem;padding-bottom:2rem">
+            <button type="submit" id="pf-submitBtn" style="width:100%;padding:12px 20px;background:var(--terra);color:#fff;border:none;border-radius:var(--r);font-family:var(--fb);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+              <span id="pf-btnText">Submit information</span>
+              <span>→</span>
+              <div id="pf-spinner" style="display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div>
+            </button>
+            <p id="pf-errorMsg" style="margin-top:10px;font-size:13px;color:var(--danger);display:none"></p>
+          </div>
+
+        </form>
+
+        <!-- Success -->
+        <div id="pf-successPage" style="display:none;text-align:center;padding:4rem 1.5rem">
+          <svg style="width:52px;height:52px;margin:0 auto 1.25rem;display:block" viewBox="0 0 52 52" fill="none">
+            <circle cx="26" cy="26" r="24" stroke="#2f5e3f" stroke-width="1.5"/>
+            <path d="M15 26l8 8 14-16" stroke="#2f5e3f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h2 style="font-family:var(--fh);font-size:26px;color:var(--ink);margin-bottom:0.5rem">Thank you.</h2>
+          <p style="font-size:14px;color:var(--muted);line-height:1.65;max-width:400px;margin:0 auto">Your information has been received. We will send you the transcript for review before anything is published.</p>
+        </div>
+
+      </div>
+    </div>
+
 </div><!-- end #main -->
 </div><!-- end #shell -->
 
 <!-- sync bar -->
 <div id="syncbar">
   <div class="sdot pulse" id="sdot"></div>
-  <span id="smsg">Conectado</span>
+  <span id="smsg">Connected</span>
   <div class="sright">
     <span id="stime" style="color:rgba(255,255,255,.28)"></span>
     <button class="sbtn" onclick="sbSync()">↻ Sync</button>
-    <button class="sbtn" onclick="sbDisc()">Desconectar</button>
+    <button class="sbtn" onclick="sbDisc()">Disconnect</button>
   </div>
 </div>
 
@@ -589,7 +736,7 @@ textarea.fta{resize:vertical;line-height:1.55}
     <h3 id="c-title"></h3>
     <p id="c-body"></p>
     <div class="cbox-btns">
-      <button class="btn ghost" id="c-no">Cancelar</button>
+      <button class="btn ghost" id="c-no">Cancel</button>
       <button class="btn danger" id="c-yes">Confirmar</button>
     </div>
   </div>
@@ -599,8 +746,8 @@ textarea.fta{resize:vertical;line-height:1.55}
 <div class="modal-bg" id="pmod">
   <div class="modal-box">
     <button class="modal-close" onclick="closePModal()">×</button>
-    <div class="modal-title" id="pmod-title">Cadastrar pessoa</div>
-    <div class="modal-sub">Pesquisador(a), jornalista, ativista ou organização</div>
+    <div class="modal-title" id="pmod-title">Register person</div>
+    <div class="modal-sub">Researcher, journalist, activist or organization</div>
     <div id="pmod-body"></div>
   </div>
 </div>
@@ -613,56 +760,52 @@ const SK = 'cm_v5';
 const COLORS = ['#c03d0a','#244060','#2f5e3f','#8c5e08','#155a52','#522e8c','#7a1a1a','#1a5a2a'];
 const EC = ['#c03d0a','#244060','#2f5e3f','#8c5e08','#155a52','#522e8c','#7a1a3a','#1a4a5a','#5a1a2a','#1a2a5a'];
 const TYPES = ['academic','ngo','journalist','platform','legal','other'];
-const TL = {academic:'Acadêmico/a',ngo:'ONG',journalist:'Jornalismo',platform:'Plataforma',legal:'Jurídico/a',other:'Outro'};
-const REGIONS = ['Sul Global','Norte Global'];
-const PRIS = ['alta','média','baixa'];
-const PST = ['mapeado','prioritário','contato','agendado','entrevistado','a confirmar'];
+const TL = {academic:'Academic',ngo:'NGO',journalist:'Journalism',platform:'Platform',legal:'Legal',other:'Other'};
+const REGIONS = ['Global South','Global North'];
+const PRIS = ['high','medium','low'];
+const PST = ['mapped','priority','contact','scheduled','interviewed','to confirm'];
 const EST = ['pending','scheduled','done','published'];
-const EL = {pending:'Pendente',scheduled:'Agendado',done:'Realizado',published:'Publicado'};
+const EL = {pending:'Pending',scheduled:'Scheduled',done:'Completed',published:'Published'};
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const TAGS = {w:'Trabalho',g:'Governança',a:'Algoritmos',s:'Sul×Norte',j:'Jornalismo',p:'Plataformas'};
+const TAGS = {w:'Labour',g:'Governance',a:'Algorithms',s:'South×North',j:'Journalism',p:'Platforms'};
 const TC = {w:'#8c5e08',g:'#244060',a:'#155a52',s:'#2f5e3f',j:'#c03d0a',p:'#522e8c'};
 
 const DEFAULT = {
 people:[
-  {id:'sarah',name:'Sarah T. Roberts',org:'UCLA — Gender, Information & Labor Studies',type:'academic',country:'EUA',city:'Los Angeles',region:'Norte Global',lat:34.05,lng:-118.24,photo:'',email:'',orcid:'',priority:'alta',status:'entrevistado',bio:'Professora titular na UCLA. Criadora do conceito de commercial content moderation (CCM). Autora de Behind the Screen (Yale UP, 2019).',pubs:'Behind the Screen (Yale UP, 2019)\n"Commercial Content Moderation: Digital Laborers\' Dirty Work" (2016)',themes:['trabalho','plataformas'],notes:'Ep. 1 confirmado.'},
-  {id:'tarleton',name:'Tarleton Gillespie',org:'Microsoft Research / Cornell University',type:'academic',country:'EUA',city:'Cambridge MA',region:'Norte Global',lat:42.36,lng:-71.10,photo:'',email:'',orcid:'',priority:'alta',status:'agendado',bio:'Pesquisador sênior no Microsoft Research. Autor de Custodians of the Internet (Yale UP, 2018).',pubs:'Custodians of the Internet (Yale UP, 2018)\n"The Politics of Platforms" — New Media & Society (2010)',themes:['governança','moderação'],notes:''},
-  {id:'carolina',name:'Carolina Are',org:'Northumbria University / LSE',type:'academic',country:'Reino Unido',city:'Londres',region:'Norte Global',lat:51.51,lng:-.12,photo:'',email:'',orcid:'',priority:'alta',status:'contato',bio:'Innovation Fellow. Pesquisa shadowbanning, plataformização da dança e opacidade algorítmica.',pubs:'"Platform gaslighting" — Platforms & Society (2025)\n"Dysfunctional appeals" — Social Media + Society (2024)',themes:['viés algorítmico','shadowbanning'],notes:'Co-entrevista com Tom Divon.'},
-  {id:'tom',name:'Tom Divon',org:'Hebrew University of Jerusalem',type:'academic',country:'Israel',city:'Jerusalém',region:'Norte Global',lat:31.77,lng:35.21,photo:'',email:'',orcid:'',priority:'alta',status:'contato',bio:'Etnógrafo de interações usuário-plataforma no TikTok e Instagram.',pubs:'"Platform gaslighting" — Platforms & Society (2025)\n"The TikTok Caliphate" (2026)',themes:['moderação','ativismo','shadowbanning'],notes:'Co-entrevista com Carolina Are.'},
-  {id:'milagros',name:'Milagros Miceli',org:'DAIR Institute / Weizenbaum Institute',type:'academic',country:'Alemanha',city:'Berlim',region:'Norte Global',lat:52.52,lng:13.40,photo:'',email:'',orcid:'0000-0002-3856-7700',priority:'alta',status:'contato',bio:'Socióloga e cientista da computação. TIME100 AI 2025. Pesquisa labor de dados e moderação no Sul Global.',pubs:'"The Role of Expertise in Effectively Moderating Harmful Social Media Content" — ACM CHI (2025)',themes:['data work','labor de IA'],notes:'TIME100 AI 2025.'},
-  {id:'matheus',name:'Matheus Viana Braz',org:'Universidade Estadual de Maringá / LATRAPS',type:'academic',country:'Brasil',city:'Maringá',region:'Sul Global',lat:-23.42,lng:-51.93,photo:'',email:'',orcid:'',priority:'alta',status:'agendado',bio:'Psicólogo social e professor adjunto na UEM. Coordenador do LATRAPS.',pubs:'"Ideologia gerencialista e plataformas de treinamento de dados para IA" — RECIIS (2022)',themes:['plataformização','saúde mental'],notes:'Co-entrevista com Tatiana Dias.'},
-  {id:'tatiana',name:'Tatiana Dias',org:'The Intercept Brasil',type:'journalist',country:'Brasil',city:'São Paulo',region:'Sul Global',lat:-23.55,lng:-46.63,photo:'',email:'',orcid:'',priority:'alta',status:'agendado',bio:'Editora executiva no Intercept Brasil. Jornalista investigativa especializada em tecnologia e direitos digitais.',pubs:'Série "O Chão de Fábrica da IA" — The Intercept Brasil',themes:['jornalismo investigativo','vigilância'],notes:'Co-entrevista com Matheus Braz.'},
-  {id:'nina',name:'Nina Santos',org:'Aláfia Lab / UFBA / Sorbonne-Nouvelle',type:'academic',country:'Brasil',city:'Salvador',region:'Sul Global',lat:-12.97,lng:-38.50,photo:'',email:'',orcid:'',priority:'média',status:'contato',bio:'Diretora do Aláfia Lab. Coordenadora do portal *desinformante.',pubs:'Pesquisas sobre desinformação e moderação em plataformas digitais',themes:['desinformação','eleições'],notes:''},
-  {id:'rafael',name:'Rafael Zanatta',org:'Data Privacy Brasil',type:'ngo',country:'Brasil',city:'São Paulo',region:'Sul Global',lat:-23.56,lng:-46.64,photo:'',email:'',orcid:'',priority:'alta',status:'contato',bio:'Co-diretor da Data Privacy Brasil. Doutor em Direito pelo IViR (Amsterdam).',pubs:'"A Proteção Coletiva de Dados Pessoais no Brasil" (2023)\n"How Big Tech Avoided Regulation in Brazil" — Tech Policy Press (2025)',themes:['regulação','LGPD'],notes:''},
-  {id:'camila',name:'Camila Salin Celi',org:'Internacional / Independente',type:'academic',country:'Chile',city:'Santiago',region:'Sul Global',lat:-33.45,lng:-70.67,photo:'',email:'',orcid:'',priority:'média',status:'mapeado',bio:'Pesquisadora de labor de dados no ecossistema de plataformas latino-americano. Colaboradora do Data Workers\' Inquiry.',pubs:'Pesquisas sobre trabalho de dados e moderação no Sul Global',themes:['data work','América Latina'],notes:''},
-  {id:'aapti',name:'Aapti Institute',org:'Sarayu Natarajan · Ritvik Gupta · Aishani Rai',type:'ngo',country:'Índia',city:'Bengaluru',region:'Sul Global',lat:12.97,lng:77.59,photo:'',email:'',orcid:'',priority:'alta',status:'contato',bio:'Instituto público de pesquisa em tecnologia e sociedade. Desenvolve código de conduta para data workers na Índia.',pubs:'"Exploring AI Labour in the Global South" (2024)',themes:['labor','Sul Global'],notes:''},
-  {id:'derechos',name:'Derechos Digitales',org:'Marianne Díaz · María Paz Canales',type:'ngo',country:'Chile',city:'Santiago',region:'Sul Global',lat:-33.47,lng:-70.65,photo:'',email:'',orcid:'',priority:'alta',status:'contato',bio:'ONG independente fundada em 2005. Liberdade de expressão e direitos digitais na América Latina.',pubs:'"Discurso de Odio en América Latina" (Marianne Díaz, 2020)',themes:['liberdade de expressão','América Latina'],notes:''},
-  {id:'marcelo',name:'Marcelo Alves dos Santos Junior',org:'PUC-Rio / NetLab UFRJ',type:'academic',country:'Brasil',city:'Rio de Janeiro',region:'Sul Global',lat:-22.97,lng:-43.17,photo:'',email:'marcelo.alves@puc-rio.br',orcid:'8527334703953554',priority:'alta',status:'mapeado',bio:'Professor na PUC-Rio e coordenador do NetLab UFRJ. Referência em desinformação no Brasil.',pubs:'Desinformação em plataformas digitais. PUC-Rio, 2021.\nEstratégias de visibilidade da extrema-direita no YouTube Brasil. RBCP, 2020.',themes:['desinformação','algoritmos'],notes:'Lattes: 8527334703953554.'},
-  {id:'renata',name:'Renata Tomaz',org:'FGV / UFRJ',type:'academic',country:'Brasil',city:'Rio de Janeiro',region:'Sul Global',lat:-22.90,lng:-43.18,photo:'',email:'renata.tomaz@fgv.br',orcid:'0000-0001-5120-0775',priority:'média',status:'mapeado',bio:'Especialista em cultura de plataformas, infância e youtubers mirins.',pubs:'O que você quer ser quando crescer? Appris, 2019.\nA criança na cultura das plataformas. Intercom, 2020.',themes:['infância','plataformas'],notes:'Lattes: 7907577544070014.'},
-  {id:'gorwa',name:'Robert Gorwa',org:'WZB Berlin Social Science Center',type:'academic',country:'Alemanha',city:'Berlim',region:'Norte Global',lat:52.52,lng:13.40,photo:'',email:'robert.gorwa@wzb.eu',orcid:'0000-0003-0243-2331',priority:'alta',status:'mapeado',bio:'Pesquisador no WZB Berlin. Autor de The Politics of Platform Regulation (Oxford UP, 2024).',pubs:'The Politics of Platform Regulation. Oxford UP, 2024.\nWhat is platform governance? ICS, 2019.',themes:['regulação','governança'],notes:'robertgorwa.com.'},
-  {id:'sana',name:'Sana Ahmad',org:'WZB Berlin Social Science Center',type:'academic',country:'Alemanha',city:'Berlim',region:'Norte Global',lat:52.50,lng:13.38,photo:'',email:'sana.ahmad@wzb.eu',orcid:'0000-0001-5749-335X',priority:'alta',status:'mapeado',bio:'Pesquisa o trabalho fantasma da moderação de conteúdo na Índia e Alemanha com foco etnográfico.',pubs:'Digital labor and the hidden work of content moderation in India. Weizenbaum, 2021.',themes:['labor','moderação','Índia'],notes:'Colabora com Gorwa e Udupa.'},
-  {id:'siapera',name:'Eugenia Siapera',org:'University College Dublin',type:'academic',country:'Irlanda',city:'Dublin',region:'Norte Global',lat:53.31,lng:-6.22,photo:'',email:'eugenia.siapera@ucd.ie',orcid:'0000-0002-1323-3333',priority:'média',status:'mapeado',bio:'Professora na UCD. Especialista em racismo digital e misoginia online.',pubs:'Understanding New Media. Sage, 2018.\nDiscursive racism in the age of datafication. Television & New Media, 2019.',themes:['racismo digital','misoginia'],notes:'UCD Centre for Digital Governance.'},
-  {id:'udupa',name:'Sahana Udupa',org:'LMU Munich',type:'academic',country:'Alemanha',city:'Munique',region:'Norte Global',lat:48.15,lng:11.58,photo:'',email:'sahana.udupa@lmu.de',orcid:'0000-0002-9907-9524',priority:'alta',status:'mapeado',bio:'Professora na LMU Munich. Pioneira em Extreme Speech comparado globalmente.',pubs:'Digital Politics in India. Oxford UP, 2021.\nDigital Hate. Indiana UP, 2022.',themes:['extreme speech','Índia'],notes:'Colabora com Gorwa e Ahmad.'},
-  {id:'pengfei',name:'Pengfei Fu',org:'University of Copenhagen',type:'academic',country:'Dinamarca',city:'Copenhague',region:'Norte Global',lat:55.68,lng:12.57,photo:'',email:'pengfei.fu@hum.ku.dk',orcid:'0000-0002-1627-8677',priority:'baixa',status:'mapeado',bio:'Professor assistente na University of Copenhagen. Pesquisa influência algorítmica e polarização.',pubs:'Algorithmic Influence and Network Dynamics. Copenhagen UP, 2023.',themes:['algoritmos','TikTok'],notes:'Ex-University of Amsterdam.'},
+  {id:'sarah',name:'Sarah T. Roberts',org:'UCLA — Gender, Information & Labor Studies',type:'academic',country:'USA',city:'Los Angeles',region:'Global North',lat:34.05,lng:-118.24,photo:'',email:'',orcid:'',priority:'high',status:'interviewed',bio:'Full professor at UCLA. Creator of the concept of commercial content moderation (CCM). Author of Behind the Screen (Yale UP, 2019).',pubs:'Behind the Screen (Yale UP, 2019)\n"Commercial Content Moderation: Digital Laborers\' Dirty Work" (2016)',themes:['labour','platforms'],notes:'Ep. 1 confirmed.'},
+  {id:'tarleton',name:'Tarleton Gillespie',org:'Microsoft Research / Cornell University',type:'academic',country:'USA',city:'Cambridge MA',region:'Global North',lat:42.36,lng:-71.10,photo:'',email:'',orcid:'',priority:'high',status:'scheduled',bio:'Senior researcher at Microsoft Research. Author of Custodians of the Internet (Yale UP, 2018).',pubs:'Custodians of the Internet (Yale UP, 2018)\n"The Politics of Platforms" — New Media & Society (2010)',themes:['governance','moderation'],notes:''},
+  {id:'carolina',name:'Carolina Are',org:'Northumbria University / LSE',type:'academic',country:'UK',city:'London',region:'Global North',lat:51.51,lng:-.12,photo:'',email:'',orcid:'',priority:'high',status:'contact',bio:'Innovation Fellow. Researches shadowbanning, platformisation of dance and algorithmic opacity.',pubs:'"Platform gaslighting" — Platforms & Society (2025)\n"Dysfunctional appeals" — Social Media + Society (2024)',themes:['algorithmic bias','shadowbanning'],notes:'Co-interview with Tom Divon.'},
+  {id:'tom',name:'Tom Divon',org:'Hebrew University of Jerusalem',type:'academic',country:'Israel',city:'Jerusalem',region:'Global North',lat:31.77,lng:35.21,photo:'',email:'',orcid:'',priority:'high',status:'contact',bio:'Ethnographer of user-platform interactions on TikTok and Instagram.',pubs:'"Platform gaslighting" — Platforms & Society (2025)\n"The TikTok Caliphate" (2026)',themes:['moderation','activism','shadowbanning'],notes:'Co-interview with Carolina Are.'},
+  {id:'milagros',name:'Milagros Miceli',org:'DAIR Institute / Weizenbaum Institute',type:'academic',country:'Germany',city:'Berlin',region:'Global North',lat:52.52,lng:13.40,photo:'',email:'',orcid:'0000-0002-3856-7700',priority:'high',status:'contact',bio:'Sociologist and computer scientist. TIME100 AI 2025. Researches data labour and moderation in the Global South.',pubs:'"The Role of Expertise in Effectively Moderating Harmful Social Media Content" — ACM CHI (2025)',themes:['data work','AI labour'],notes:'TIME100 AI 2025.'},
+  {id:'matheus',name:'Matheus Viana Braz',org:'Universidade Estadual de Maringá / LATRAPS',type:'academic',country:'Brazil',city:'Maringá',region:'Global South',lat:-23.42,lng:-51.93,photo:'',email:'',orcid:'',priority:'high',status:'scheduled',bio:'Social psychologist and professor at UEM. Coordinator of LATRAPS.',pubs:'"Ideologia gerencialista e plataformas de treinamento de dados para IA" — RECIIS (2022)',themes:['platformisation','mental health'],notes:'Co-interview with Tatiana Dias.'},
+  {id:'tatiana',name:'Tatiana Dias',org:'The Intercept Brasil',type:'journalist',country:'Brazil',city:'São Paulo',region:'Global South',lat:-23.55,lng:-46.63,photo:'',email:'',orcid:'',priority:'high',status:'scheduled',bio:'Executive editor at The Intercept Brasil. Investigative journalist specialising in technology and digital rights.',pubs:'Series "O Chão de Fábrica da IA" — The Intercept Brasil',themes:['investigative journalism','surveillance'],notes:'Co-interview with Matheus Braz.'},
+  {id:'nina',name:'Nina Santos',org:'Aláfia Lab / UFBA / Sorbonne-Nouvelle',type:'academic',country:'Brazil',city:'Salvador',region:'Global South',lat:-12.97,lng:-38.50,photo:'',email:'',orcid:'',priority:'medium',status:'contact',bio:'Director of Aláfia Lab. Coordinator of the *desinformante portal.',pubs:'Research on disinformation and moderation on digital platforms',themes:['disinformation','elections'],notes:''},
+  {id:'rafael',name:'Rafael Zanatta',org:'Data Privacy Brasil',type:'ngo',country:'Brazil',city:'São Paulo',region:'Global South',lat:-23.56,lng:-46.64,photo:'',email:'',orcid:'',priority:'high',status:'contact',bio:'Co-director of Data Privacy Brasil. Doctor of Law from IViR (Amsterdam).',pubs:'"A Proteção Coletiva de Dados Pessoais no Brasil" (2023)\n"How Big Tech Avoided Regulation in Brazil" — Tech Policy Press (2025)',themes:['regulation','LGPD'],notes:''},
+  {id:'camila',name:'Camila Salin Celi',org:'Internacional / Independent',type:'academic',country:'Chile',city:'Santiago',region:'Global South',lat:-33.45,lng:-70.67,photo:'',email:'',orcid:'',priority:'medium',status:'mapped',bio:'Researcher of data labour in the Latin American platform ecosystem. Collaborator of the Data Workers\' Inquiry.',pubs:'Research on data work and moderation in the Global South',themes:['data work','Latin America'],notes:''},
+  {id:'aapti',name:'Aapti Institute',org:'Sarayu Natarajan · Ritvik Gupta · Aishani Rai',type:'ngo',country:'India',city:'Bengaluru',region:'Global South',lat:12.97,lng:77.59,photo:'',email:'',orcid:'',priority:'high',status:'contact',bio:'Public research institute on technology and society. Develops code of conduct for data workers in India.',pubs:'"Exploring AI Labour in the Global South" (2024)',themes:['labour','Global South'],notes:''},
+  {id:'derechos',name:'Derechos Digitales',org:'Marianne Díaz · María Paz Canales',type:'ngo',country:'Chile',city:'Santiago',region:'Global South',lat:-33.47,lng:-70.65,photo:'',email:'',orcid:'',priority:'high',status:'contact',bio:'Independent NGO founded in 2005. Freedom of expression and digital rights in Latin America.',pubs:'"Discurso de Odio en América Latina" (Marianne Díaz, 2020)',themes:['freedom of expression','Latin America'],notes:''},
+  {id:'marcelo',name:'Marcelo Alves dos Santos Junior',org:'PUC-Rio / NetLab UFRJ',type:'academic',country:'Brazil',city:'Rio de Janeiro',region:'Global South',lat:-22.97,lng:-43.17,photo:'',email:'marcelo.alves@puc-rio.br',orcid:'8527334703953554',priority:'high',status:'mapped',bio:'Professor at PUC-Rio and coordinator of NetLab UFRJ. Key reference on disinformation in Brazil.',pubs:'Desinformação em plataformas digitais. PUC-Rio, 2021.\nEstratégias de visibilidade da extrema-direita no YouTube Brasil. RBCP, 2020.',themes:['disinformation','algorithms'],notes:'Lattes: 8527334703953554.'},
+  {id:'renata',name:'Renata Tomaz',org:'FGV / UFRJ',type:'academic',country:'Brazil',city:'Rio de Janeiro',region:'Global South',lat:-22.90,lng:-43.18,photo:'',email:'renata.tomaz@fgv.br',orcid:'0000-0001-5120-0775',priority:'medium',status:'mapped',bio:'Specialist in platform culture, childhood and child YouTubers.',pubs:'O que você quer ser quando crescer? Appris, 2019.\nA criança na cultura das plataformas. Intercom, 2020.',themes:['childhood','platforms'],notes:''},
+  {id:'gorwa',name:'Robert Gorwa',org:'WZB Berlin Social Science Center',type:'academic',country:'Germany',city:'Berlin',region:'Global North',lat:52.52,lng:13.40,photo:'',email:'robert.gorwa@wzb.eu',orcid:'0000-0003-0243-2331',priority:'high',status:'mapped',bio:'Researcher at WZB Berlin. Author of The Politics of Platform Regulation (Oxford UP, 2024).',pubs:'The Politics of Platform Regulation. Oxford UP, 2024.\nWhat is platform governance? ICS, 2019.',themes:['regulation','governance'],notes:'robertgorwa.com.'},
+  {id:'sana',name:'Sana Ahmad',org:'WZB Berlin Social Science Center',type:'academic',country:'Germany',city:'Berlin',region:'Global North',lat:52.50,lng:13.38,photo:'',email:'sana.ahmad@wzb.eu',orcid:'0000-0001-5749-335X',priority:'high',status:'mapped',bio:'Researches the hidden labour of content moderation in India and Germany with an ethnographic focus.',pubs:'Digital labor and the hidden work of content moderation in India. Weizenbaum, 2021.',themes:['labour','moderation','India'],notes:'Collaborates with Gorwa and Udupa.'},
+  {id:'siapera',name:'Eugenia Siapera',org:'University College Dublin',type:'academic',country:'Ireland',city:'Dublin',region:'Global North',lat:53.31,lng:-6.22,photo:'',email:'eugenia.siapera@ucd.ie',orcid:'0000-0002-1323-3333',priority:'medium',status:'mapped',bio:'Professor at UCD. Specialist in digital racism and online misogyny.',pubs:'Understanding New Media. Sage, 2018.\nDiscursive racism in the age of datafication. Television & New Media, 2019.',themes:['digital racism','misogyny'],notes:'UCD Centre for Digital Governance.'},
+  {id:'udupa',name:'Sahana Udupa',org:'LMU Munich',type:'academic',country:'Germany',city:'Munich',region:'Global North',lat:48.15,lng:11.58,photo:'',email:'sahana.udupa@lmu.de',orcid:'0000-0002-9907-9524',priority:'high',status:'mapped',bio:'Professor at LMU Munich. Pioneer in globally comparative Extreme Speech.',pubs:'Digital Politics in India. Oxford UP, 2021.\nDigital Hate. Indiana UP, 2022.',themes:['extreme speech','India'],notes:'Collaborates with Gorwa and Ahmad.'},
+  {id:'pengfei',name:'Pengfei Fu',org:'University of Copenhagen',type:'academic',country:'Denmark',city:'Copenhagen',region:'Global North',lat:55.68,lng:12.57,photo:'',email:'pengfei.fu@hum.ku.dk',orcid:'0000-0002-1627-8677',priority:'low',status:'mapped',bio:'Assistant professor at the University of Copenhagen. Researches algorithmic influence and polarisation.',pubs:'Algorithmic Influence and Network Dynamics. Copenhagen UP, 2023.',themes:['algorithms','TikTok'],notes:'Ex-University of Amsterdam.'},
 ],
 episodes:[
-  {id:'e1',order:1,year:2026,month:'Mar',title:'A invenção do trabalho invisível',angle:'Como se nomeou um trabalho que não tinha nome — e o que mudou desde então',researchers:['sarah'],tags:['w','s'],status:'scheduled',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
-  {id:'e2',order:2,year:2026,month:'Mai',title:'Plataformas são o que moderam',angle:'Por que moderação não é função periférica — é constitutiva das plataformas',researchers:['tarleton'],tags:['g','a'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
-  {id:'e3',order:3,year:2026,month:'Jul',title:'O chão de fábrica da IA',angle:'A investigação brasileira sobre trabalho de dados e moderadores',researchers:['tatiana','matheus'],tags:['w','j','s'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
-  {id:'e4',order:4,year:2026,month:'Set',title:'Dados, poder e quem os produz',angle:'Do Data Workers\' Inquiry ao TIME100 AI',researchers:['milagros','camila'],tags:['w','s','a'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
-  {id:'e5',order:5,year:2026,month:'Nov',title:'Desinformação, eleições e moderação no Brasil',angle:'Como plataformas moderam (ou não) em contextos eleitorais',researchers:['nina'],tags:['j','g','s'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
-  {id:'e6',order:6,year:2026,month:'Dez',title:'Dados pessoais, regulação e Big Tech no Brasil',angle:'LGPD, PL 2630 e o lobbying que bloqueia a regulação de plataformas',researchers:['rafael'],tags:['g','s'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
-  {id:'e7',order:7,year:2027,month:'Mar',title:'Você foi shadowbanned',angle:'Viés algorítmico — quem desaparece, por quê, e o gaslighting das plataformas',researchers:['carolina','tom'],tags:['a','g'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
-  {id:'e8',order:8,year:2027,month:'Mai',title:'A Índia como espelho do Sul Global',angle:'Labor, escala e responsabilização transnacional na cadeia de IA',researchers:['aapti'],tags:['w','s','g'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
-  {id:'e9',order:9,year:2027,month:'Jul',title:'América Latina: liberdade de expressão e ódio digital',angle:'Discurso de ódio e os limites das políticas globais de moderação',researchers:['derechos'],tags:['g','s','a'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
-  {id:'e10',order:10,year:2027,month:'Set',title:'Trauma, saúde mental e o custo humano da moderação',angle:'O que acontece com quem vê o pior da internet todos os dias',researchers:[],tags:['w','s'],status:'pending',notes:'A confirmar.',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
-  {id:'e11',order:11,year:2027,month:'Out',title:'IA generativa e o futuro da moderação',angle:'Automação, LLMs e o que se perde quando algoritmos substituem julgamento humano',researchers:[],tags:['a','g'],status:'pending',notes:'A confirmar — AI for Change.',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
-  {id:'e12',order:12,year:2027,month:'Dez',title:'O que aprendemos — e o que ainda não mudou',angle:'Balanço crítico da série e agenda futura',researchers:[],tags:['g','w','s'],status:'pending',notes:'Mesa redonda final.',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e1',order:1,year:2026,month:'Mar',title:'The invention of invisible labour',angle:'How work with no name was named — and what has changed since',researchers:['sarah'],tags:['w','s'],status:'scheduled',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e2',order:2,year:2026,month:'May',title:'Platforms are what they moderate',angle:'Why moderation is not peripheral — it is constitutive of platforms',researchers:['tarleton'],tags:['g','a'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e3',order:3,year:2026,month:'Jul',title:'The factory floor of AI',angle:'The Brazilian investigation into data labour and moderators',researchers:['tatiana','matheus'],tags:['w','j','s'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e4',order:4,year:2026,month:'Sep',title:'Data, power and who produces it',angle:"From the Data Workers' Inquiry to TIME100 AI",researchers:['milagros','camila'],tags:['w','s','a'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e5',order:5,year:2026,month:'Nov',title:'Disinformation, elections and moderation in Brazil',angle:'How platforms moderate (or not) in electoral contexts',researchers:['nina'],tags:['j','g','s'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e6',order:6,year:2026,month:'Dec',title:'Personal data, regulation and Big Tech in Brazil',angle:'LGPD, PL 2630 and the lobbying that blocks platform regulation',researchers:['rafael'],tags:['g','s'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e7',order:7,year:2027,month:'Mar',title:'You were shadowbanned',angle:'Algorithmic bias — who disappears, why, and platform gaslighting',researchers:['carolina','tom'],tags:['a','g'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e8',order:8,year:2027,month:'May',title:'India as a mirror of the Global South',angle:'Labour, scale and transnational accountability in the AI chain',researchers:['aapti'],tags:['w','s','g'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e9',order:9,year:2027,month:'Jul',title:'Latin America: freedom of expression and digital hate',angle:'Hate speech and the limits of global moderation policies',researchers:['derechos'],tags:['g','s','a'],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e10',order:10,year:2027,month:'Sep',title:'Trauma, mental health and the human cost of moderation',angle:'What happens to those who see the worst of the internet every day',researchers:[],tags:['w','s'],status:'pending',notes:'To confirm.',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e11',order:11,year:2027,month:'Oct',title:'Generative AI and the future of moderation',angle:'Automation, LLMs and what is lost when algorithms replace human judgment',researchers:[],tags:['a','g'],status:'pending',notes:'To confirm — AI for Change.',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
+  {id:'e12',order:12,year:2027,month:'Dec',title:'What we have learned — and what has not changed',angle:'Critical review of the series and future agenda',researchers:[],tags:['g','w','s'],status:'pending',notes:'Final roundtable.',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}},
 ]};
-
-// ══════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════
 const S = {
   data: null, dirty: false, _t: null,
   load(){ try{ const s=localStorage.getItem(SK); this.data=s?this._v(JSON.parse(s)):this._c(); }catch{ this.data=this._c(); } },
@@ -728,7 +871,7 @@ function toast(msg,type=''){
   document.getElementById('toast').appendChild(el);
   setTimeout(()=>el.remove(),3400);
 }
-window.onbeforeunload=()=>{ if(S.dirty) return'Alterações não salvas.'; };
+window.onbeforeunload=()=>{ if(S.dirty) return'Unsaved changes.'; };
 let _cOk=null;
 document.getElementById('c-yes').onclick=()=>{ document.getElementById('cov').classList.remove('on'); if(_cOk)_cOk(); _cOk=null; };
 document.getElementById('c-no').onclick=()=>{ document.getElementById('cov').classList.remove('on'); _cOk=null; };
@@ -737,7 +880,7 @@ function conf(title,body,ok){ document.getElementById('c-title').textContent=tit
 // ══════════════════════════════════════════════════
 // NAV
 // ══════════════════════════════════════════════════
-const PTITLES = {dash:'Dashboard',eps:'Episódios',ppl:'Pesquisadores & Atores'};
+const PTITLES = {dash:'Dashboard',eps:'Episodes',ppl:'Researchers & Actors',form:'Interviewee Profile'};
 let _pg = 'dash';
 function go(id, el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
@@ -759,7 +902,7 @@ function go(id, el){
 function updateEpStatusBadge(id, status){
   // Update only the status badge in ep list without full re-render
   const item=document.querySelector(`.ep-item[onclick*="${id}"] .stchip`);
-  if(item){ item.className='stchip st-'+status; item.textContent={pending:'Pendente',scheduled:'Agendado',done:'Realizado',published:'Publicado'}[status]||status; }
+  if(item){ item.className='stchip st-'+status; item.textContent={pending:'Pending',scheduled:'Scheduled',done:'Completed',published:'Published'}[status]||status; }
 }
 
 function ubadges(){
@@ -770,10 +913,10 @@ function ubadges(){
 // ══════════════════════════════════════════════════
 // EXPORT / IMPORT / RESET
 // ══════════════════════════════════════════════════
-function xj(){ const b=new Blob([JSON.stringify(S.data,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='cm-ai-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); toast('JSON exportado','s'); }
-function xc(){ const rows=[['id','order','title','status','year','month','researchers'],...S.e.map(e=>[e.id,e.order,e.title,e.status,e.year,e.month,(e.researchers||[]).map(r=>S.P(r)?.name||r).join('; ')])]; const csv=rows.map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n'); const b=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='cm-ai-eps.csv'; a.click(); toast('CSV exportado','s'); }
-function xi(ev){ const f=ev.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{ try{ S.data=S._v(JSON.parse(e.target.result)); S.save(true); init(); toast('Importado','s'); }catch{ toast('Arquivo inválido','e'); } }; r.readAsText(f); ev.target.value=''; }
-function xr(){ conf('Redefinir dados','Apagar tudo e restaurar os dados padrão?',()=>{ localStorage.removeItem(SK); location.reload(); }); }
+function xj(){ const b=new Blob([JSON.stringify(S.data,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='cm-ai-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); toast('JSON exported','s'); }
+function xc(){ const rows=[['id','order','title','status','year','month','researchers'],...S.e.map(e=>[e.id,e.order,e.title,e.status,e.year,e.month,(e.researchers||[]).map(r=>S.P(r)?.name||r).join('; ')])]; const csv=rows.map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n'); const b=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='cm-ai-eps.csv'; a.click(); toast('CSV exported','s'); }
+function xi(ev){ const f=ev.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=e=>{ try{ S.data=S._v(JSON.parse(e.target.result)); S.save(true); init(); toast('Imported','s'); }catch{ toast('Invalid file','e'); } }; r.readAsText(f); ev.target.value=''; }
+function xr(){ conf('Reset data','Delete everything and restore default data?',()=>{ localStorage.removeItem(SK); location.reload(); }); }
 
 // ══════════════════════════════════════════════════
 // DASHBOARD
@@ -782,7 +925,7 @@ function rdash(){
   const eps=S.e, ppl=S.p;
   const done=eps.filter(e=>['done','published'].includes(e.status)).length;
   const sched=eps.filter(e=>e.status==='scheduled').length;
-  const sul=ppl.filter(p=>p.region==='Sul Global').length;
+  const sul=ppl.filter(p=>p.region==='Global South').length;
   const tq=eps.reduce((a,e)=>a+(e.questions?.length||0),0);
 
   const tl=eps.slice(0,6).map(ep=>{
@@ -797,38 +940,38 @@ function rdash(){
 
   document.getElementById('dash-body').innerHTML=`
     <div class="dash-eyebrow">DigiLabour · Research Agenda 2026–2027</div>
-    <div class="dash-h1">Content Moderation<br><em>in AI</em></div>
-    <div class="dash-sub">12 episódios · Sul × Norte Global · Legitimacy · Care · Governance · Cost</div>
+    <div class="dash-h1">(Re)thinking<br><em>Content Moderation</em></div>
+    <div class="dash-sub">12 episódios · Sul × Global North · Legitimacy · Care · Governance · Cost</div>
     <div class="metrics">
-      <div class="mc"><div class="mc-icon">📡</div><div class="mc-val" style="color:var(--terra)">${eps.length}</div><div class="mc-lbl">Episódios</div></div>
-      <div class="mc"><div class="mc-icon">🌍</div><div class="mc-val" style="color:var(--sage)">${ppl.length}</div><div class="mc-lbl">Atores</div></div>
-      <div class="mc"><div class="mc-icon">🗺️</div><div class="mc-val" style="color:var(--slate)">${[...new Set(ppl.map(p=>p.country))].length}</div><div class="mc-lbl">Países</div></div>
-      <div class="mc"><div class="mc-icon">✅</div><div class="mc-val" style="color:var(--gold)">${done}/${eps.length}</div><div class="mc-lbl">Realizados</div></div>
-      <div class="mc"><div class="mc-icon">💬</div><div class="mc-val" style="color:var(--teal)">${tq}</div><div class="mc-lbl">Perguntas</div></div>
-      <div class="mc"><div class="mc-icon">🌐</div><div class="mc-val" style="color:var(--violet)">${sul}</div><div class="mc-lbl">Sul Global</div></div>
+      <div class="mc"><div class="mc-icon">📡</div><div class="mc-val" style="color:var(--terra)">${eps.length}</div><div class="mc-lbl">Episodes</div></div>
+      <div class="mc"><div class="mc-icon">🌍</div><div class="mc-val" style="color:var(--sage)">${ppl.length}</div><div class="mc-lbl">Actors</div></div>
+      <div class="mc"><div class="mc-icon">🗺️</div><div class="mc-val" style="color:var(--slate)">${[...new Set(ppl.map(p=>p.country))].length}</div><div class="mc-lbl">Countries</div></div>
+      <div class="mc"><div class="mc-icon">✅</div><div class="mc-val" style="color:var(--gold)">${done}/${eps.length}</div><div class="mc-lbl">Completed</div></div>
+      <div class="mc"><div class="mc-icon">💬</div><div class="mc-val" style="color:var(--teal)">${tq}</div><div class="mc-lbl">Questions</div></div>
+      <div class="mc"><div class="mc-icon">🌐</div><div class="mc-val" style="color:var(--violet)">${sul}</div><div class="mc-lbl">Global South</div></div>
     </div>
     <div class="dash-grid">
-      <div class="card"><div class="ch">Linha do tempo editorial</div>${tl}</div>
-      <div class="card"><div class="ch">Progresso</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:5px;display:flex;justify-content:space-between"><span>Série</span><span style="font-family:var(--fm)">${done}/${eps.length}</span></div>
+      <div class="card"><div class="ch">Editorial timeline</div>${tl}</div>
+      <div class="card"><div class="ch">Progress</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:5px;display:flex;justify-content:space-between"><span>Series</span><span style="font-family:var(--fm)">${done}/${eps.length}</span></div>
         <div style="height:5px;background:var(--cream2);border-radius:10px;overflow:hidden;margin-bottom:16px"><div style="height:100%;background:var(--terra);border-radius:10px;width:${Math.round(done/Math.max(eps.length,1)*100)}%;transition:width .4s"></div></div>
-        ${[['Sul Global','sage',sul],['Norte Global','slate',ppl.length-sul],['Agendados','gold',sched]].map(([l,c,n])=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(24,20,15,.05)"><div style="width:7px;height:7px;border-radius:50%;background:var(--${c});flex-shrink:0"></div><div style="flex:1;font-size:13px;color:var(--ink2)">${l}</div><div style="font-size:12px;font-weight:700;font-family:var(--fm);color:var(--ink)">${n}</div></div>`).join('')}
+        ${[['Global South','sage',sul],['Global North','slate',ppl.length-sul],['Scheduled','gold',sched]].map(([l,c,n])=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(24,20,15,.05)"><div style="width:7px;height:7px;border-radius:50%;background:var(--${c});flex-shrink:0"></div><div style="flex:1;font-size:13px;color:var(--ink2)">${l}</div><div style="font-size:12px;font-weight:700;font-family:var(--fm);color:var(--ink)">${n}</div></div>`).join('')}
         <div class="divl" style="margin-top:16px"></div>
         <div style="display:flex;gap:8px;margin-top:12px">
-          <button class="btn acc" style="flex:1" onclick="go('eps',null)">→ Episódios</button>
-          <button class="btn ghost" style="flex:1" onclick="go('ppl',null)">→ Atores</button>
+          <button class="btn acc" style="flex:1" onclick="go('eps',null)">→ Episodes</button>
+          <button class="btn ghost" style="flex:1" onclick="go('ppl',null)">→ Actors</button>
         </div>
       </div>
     </div>
     <!-- Map -->
     <div class="dash-map-wrap">
       <div style="padding:10px 14px;background:#fff;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:10px">
-        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--faint)">Mapa de pesquisadores & atores</div>
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--faint)">Map of researchers & actors</div>
         <div style="margin-left:auto;display:flex;gap:6px">
-          <button class="btn ghost xs mob-only" onclick="mobMapOpen()" style="display:none">🗺 Ver mapa</button>
-          <button class="btn ghost xs desk-only" onclick="mapFilter('Sul Global')" id="mf-sul" style="font-size:10px">Sul Global</button>
-          <button class="btn ghost xs desk-only" onclick="mapFilter('Norte Global')" id="mf-norte" style="font-size:10px">Norte Global</button>
-          <button class="btn ghost xs desk-only" onclick="mapFilter(null)" style="font-size:10px">Todos</button>
+          <button class="btn ghost xs mob-only" onclick="mobMapOpen()" style="display:none">🗺 View map</button>
+          <button class="btn ghost xs desk-only" onclick="mapFilter('Global South')" id="mf-sul" style="font-size:10px">Global South</button>
+          <button class="btn ghost xs desk-only" onclick="mapFilter('Global North')" id="mf-norte" style="font-size:10px">Global North</button>
+          <button class="btn ghost xs desk-only" onclick="mapFilter(null)" style="font-size:10px">All</button>
         </div>
       </div>
       <div id="dash-map"></div>
@@ -890,11 +1033,11 @@ function renderEpDetail(id){
         <div class="ep-dh-num" style="background:${c}">${ep.order}</div>
         <div style="flex:1;min-width:0">
           <input id="ep-title-${san(id)}" value="${san(ep.title||'')}"
-            placeholder="Título do episódio"
+            placeholder="Episoof title"
             style="width:100%;font-family:var(--fh);font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.2px;border:none;background:transparent;outline:none;padding:0;margin-bottom:4px"
             onchange="S.uE('${san(id)}','title',this.value);rEpList()">
           <input id="ep-angle-${san(id)}" value="${san(ep.angle||'')}"
-            placeholder="Ângulo editorial…"
+            placeholder="Editorial angle…"
             style="width:100%;font-size:12px;color:var(--muted);font-style:italic;border:none;background:transparent;outline:none;padding:0"
             onchange="S.uE('${san(id)}','angle',this.value)">
         </div>
@@ -919,7 +1062,7 @@ function renderEpDetail(id){
     </div>
     <!-- tabs -->
     <div class="ep-tabs">
-      ${[['ficha','Ficha & Pesquisadores'],['roteiro','Roteiro'],['trechos','Trechos'],['pub','Publicação'],['notas','Notas']].map(([k,l])=>`<button class="ep-tab${_epTab===k?' on':''}" onclick="setEpTab('${k}','${san(id)}')">${l}</button>`).join('')}
+      ${[['ficha','Profile & Researchers'],['roteiro','Guide'],['trechos','Excerpts'],['pub','Publication'],['notas','Notes']].map(([k,l])=>`<button class="ep-tab${_epTab===k?' on':''}" onclick="setEpTab('${k}','${san(id)}')">${l}</button>`).join('')}
     </div>
     <!-- tab content -->
     <div class="ep-tc" id="ep-tc-${san(id)}"></div>
@@ -942,7 +1085,7 @@ function renderEpTab(id){
     box.innerHTML=`
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div>
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:10px">Pesquisadores vinculados</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:10px">Linked researchers</div>
           ${res.length?res.map(p=>`
             <div class="pessoa-chip">
               ${pav(p,32)}
@@ -951,15 +1094,15 @@ function renderEpTab(id){
                 <div class="pessoa-chip-sub">${tbdg(p.type)} · ${san(p.city||p.country||'—')}</div>
               </div>
               <button class="btn ghost xs" onclick="toggleRes('${san(id)}','${san(p.id)}')" title="Desvincular">×</button>
-            </div>`).join(''):'<div style="font-size:12px;color:var(--faint);padding:8px 0">Nenhum vinculado ainda.</div>'}
-          <div style="margin-top:12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:8px">Adicionar pesquisador(a)</div>
+            </div>`).join(''):'<div style="font-size:12px;color:var(--faint);padding:8px 0">None linked yet.</div>'}
+          <div style="margin-top:12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:8px">Add researcher</div>
           <div style="display:flex;flex-wrap:wrap;gap:4px">
             ${all.filter(p=>!(ep.researchers||[]).includes(p.id)).map(p=>`<span class="chip" style="background:var(--cream2);color:var(--ink3);font-size:11px" onclick="toggleRes('${san(id)}','${san(p.id)}')">${san(p.name.split(' ')[0])}</span>`).join('')}
           </div>
-          <button class="btn ghost sm" style="margin-top:10px;width:100%" onclick="openPModal()">+ Cadastrar novo ator</button>
+          <button class="btn ghost sm" style="margin-top:10px;width:100%" onclick="openPModal()">+ Register novo actor</button>
         </div>
         <div>
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:10px">Informações do episódio</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:10px">Episoof information</div>
           ${res.map(p=>`
             <div class="card" style="margin-bottom:10px;padding:12px 14px">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">${pav(p,28)}<div><div style="font-size:12px;font-weight:600;color:var(--ink)">${san(p.name)}</div><div style="font-size:11px;color:var(--muted)">${san(p.org||'—')}</div></div></div>
@@ -973,8 +1116,8 @@ function renderEpTab(id){
     box.innerHTML=`
       <div style="max-width:680px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint)">${(ep.questions||[]).length} pergunta${ep.questions?.length!==1?'s':''}</div>
-          <button class="btn ghost xs" onclick="clearQs('${san(id)}')">Limpar tudo</button>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint)">${(ep.questions||[]).length} question${ep.questions?.length!==1?'s':''}</div>
+          <button class="btn ghost xs" onclick="clearQs('${san(id)}')">Clear all</button>
         </div>
         <div id="q-list-${san(id)}">
           ${(ep.questions||[]).length?ep.questions.map((q,i)=>`
@@ -982,15 +1125,15 @@ function renderEpTab(id){
               <span class="q-n">${i+1}.</span>
               <textarea class="q-txt" rows="1" oninput="autoH(this);S.uEarr('${san(id)}','questions',${i},this.value)">${san(q)}</textarea>
               <button class="q-del" onclick="delQ('${san(id)}',${i})">×</button>
-            </div>`).join(''):'<div class="empty" style="padding:16px 0">Nenhuma pergunta ainda. Adicione abaixo.</div>'}
+            </div>`).join(''):'<div class="empty" style="padding:16px 0">No questions yet. Add below.</div>'}
         </div>
         <div class="add-row">
-          <input class="add-inp" id="nq-${san(id)}" placeholder="Escreva uma pergunta e pressione Enter…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addQ('${san(id)}')}">
-          <button class="btn acc sm" onclick="addQ('${san(id)}')">+ Adicionar</button>
+          <input class="add-inp" id="nq-${san(id)}" placeholder="Write a question and press Enter…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addQ('${san(id)}')}">
+          <button class="btn acc sm" onclick="addQ('${san(id)}')">+ Add</button>
         </div>
         <div style="margin-top:16px;padding:12px 14px;background:#fff;border:1px solid var(--rule);border-radius:var(--rlg)">
-          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:8px">Exportar roteiro</div>
-          <button class="btn ghost sm" onclick="copyQ('${san(id)}')">📋 Copiar perguntas</button>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:8px">Export guide</div>
+          <button class="btn ghost sm" onclick="copyQ('${san(id)}')">📋 Copy questions</button>
         </div>
       </div>`;
     // auto-resize textareas
@@ -1007,26 +1150,26 @@ function renderEpTab(id){
               <button style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--faint);font-size:14px;transition:color .13s" onclick="delEx('${san(id)}',${i})" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--faint)'">×</button>
             </div>
             <div class="ex-txt">"${san(ex.text)}"</div>
-          </div>`).join(''):'<div class="empty" style="padding:16px 0">Nenhum trecho registrado.</div>'}
+          </div>`).join(''):'<div class="empty" style="padding:16px 0">No excerpts recorded.</div>'}
         <div class="card" style="margin-top:14px">
-          <div class="ch">Registrar trecho</div>
-          <div class="fg"><label class="fl">Trecho</label><textarea class="fta" id="nex-t-${san(id)}" rows="3" placeholder="Cole ou escreva a fala…"></textarea></div>
+          <div class="ch">Record excerpt</div>
+          <div class="fg"><label class="fl">Excerpt</label><textarea class="fta" id="nex-t-${san(id)}" rows="3" placeholder="Cole ou escreva a fala…"></textarea></div>
           <div class="g2">
-            <div class="fg"><label class="fl">Quem disse?</label>
+            <div class="fg"><label class="fl">Who said it?</label>
               <select class="fsel" id="nex-sp-${san(id)}">
-                <option value="">— Selecione —</option>
+                <option value="">— Select —</option>
                 ${(ep.researchers||[]).map(r=>S.P(r)).filter(Boolean).map(p=>`<option value="${san(p.name)}">${san(p.name)}</option>`).join('')}
-                <option value="_outro">Outro…</option>
+                <option value="_outro">Other…</option>
               </select>
             </div>
             <div class="fg"><label class="fl">Tema</label>
               <select class="fsel" id="nex-tag-${san(id)}">
-                <option value="">Sem tema</option>
+                <option value="">No theme</option>
                 ${Object.entries(TAGS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}
               </select>
             </div>
           </div>
-          <button class="btn acc sm" onclick="addEx('${san(id)}')">Salvar trecho</button>
+          <button class="btn acc sm" onclick="addEx('${san(id)}')">Save trecho</button>
         </div>
       </div>`;
   }
@@ -1042,41 +1185,41 @@ function renderEpTab(id){
       <div style="padding:14px 18px;background:#fff;border-bottom:1px solid var(--rule);flex-shrink:0">
         <div class="g3" style="margin-bottom:10px">
           <div class="fg" style="margin:0"><label class="fl">Título</label><input class="fi" value="${san(pub.title||ep.title||'')}" oninput="upub('${san(id)}','title',this.value)"></div>
-          <div class="fg" style="margin:0"><label class="fl">Subtítulo</label><input class="fi" value="${san(pub.subtitle||ep.angle||'')}" oninput="upub('${san(id)}','subtitle',this.value)"></div>
+          <div class="fg" style="margin:0"><label class="fl">Subtitle</label><input class="fi" value="${san(pub.subtitle||ep.angle||'')}" oninput="upub('${san(id)}','subtitle',this.value)"></div>
           <div class="fg" style="margin:0"><label class="fl">Keywords</label><input class="fi" value="${san(pub.keywords||'')}" oninput="upub('${san(id)}','keywords',this.value)" placeholder="moderação, plataformas…"></div>
         </div>
-        <div class="fg" style="margin:0"><label class="fl">Introdução editorial</label><textarea class="fta" rows="2" oninput="upub('${san(id)}','intro',this.value)" placeholder="Contextualize a entrevista para os leitores…">${san(pub.intro||'')}</textarea></div>
+        <div class="fg" style="margin:0"><label class="fl">Editorial introduction</label><textarea class="fta" rows="2" oninput="upub('${san(id)}','intro',this.value)" placeholder="Contextualize the interview for readers…">${san(pub.intro||'')}</textarea></div>
       </div>
       <div class="pub-toolbar">
         <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-right:4px">Formatar:</span>
-        ${[['P:','**P:** ',''],['R:','**R:** ',''],['**B**','**','**'],['_I_','_','_'],['> ','> ','']].map(([l,pre,pos])=>`<button class="tool-btn" onclick="fmtPub('${san(id)}','${pre.replace(/'/g,"\\'")}','${pos.replace(/'/g,"\\'")}') ">${l}</button>`).join('')}
-        <button class="tool-btn" onclick="genPubStruct('${san(id)}')" style="margin-left:auto;border-color:var(--terra);color:var(--terra)">Gerar estrutura P/R</button>
-        <button class="tool-btn" onclick="cpPub('${san(id)}')" style="margin-left:4px">📋 Copiar</button>
+        ${[['P:','**Q:** ',''],['R:','**A:** ',''],['**B**','**','**'],['_I_','_','_'],['> ','> ','']].map(([l,pre,pos])=>`<button class="tool-btn" onclick="fmtPub('${san(id)}','${pre.replace(/'/g,"\\'")}','${pos.replace(/'/g,"\\'")}') ">${l}</button>`).join('')}
+        <button class="tool-btn" onclick="genPubStruct('${san(id)}')" style="margin-left:auto;border-color:var(--terra);color:var(--terra)">Generate Q/A structure</button>
+        <button class="tool-btn" onclick="cpPub('${san(id)}')" style="margin-left:4px">📋 Copy</button>
       </div>
-      <textarea class="pub-ed" id="pub-ed-${san(id)}" placeholder="P: Primeira pergunta…\n\nR: Resposta…" oninput="upub('${san(id)}','body',this.value)">${san(pub.body||'')}</textarea>`;
+      <textarea class="pub-ed" id="pub-ed-${san(id)}" placeholder="P: Primeira question…\n\nR: Resposta…" oninput="upub('${san(id)}','body',this.value)">${san(pub.body||'')}</textarea>`;
   }
   else if(_epTab==='notas'){
     box.innerHTML=`
       <div style="max-width:640px">
-        <div class="fg"><label class="fl">Notas internas do episódio</label>
-          <textarea class="fta" rows="8" placeholder="Observações, dificuldades, contatos, lembretes…" oninput="S.uE('${san(id)}','notes',this.value)">${san(ep.notes||'')}</textarea>
+        <div class="fg"><label class="fl">Internal notes do episódio</label>
+          <textarea class="fta" rows="8" placeholder="Notes, contacts, reminders…" oninput="S.uE('${san(id)}','notes',this.value)">${san(ep.notes||'')}</textarea>
         </div>
         <div class="card" style="margin-top:12px">
-          <div class="ch">Reordenar na série</div>
-          <div style="font-size:13px;color:var(--ink3);margin-bottom:10px">Posição atual: <strong>Ep. ${ep.order}</strong> de ${S.e.length}</div>
+          <div class="ch">Reorder in series</div>
+          <div style="font-size:13px;color:var(--ink3);margin-bottom:10px">Current position: <strong>Ep. ${ep.order}</strong> of ${S.e.length}</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
-            ${S.e.filter(e=>e.id!==id).map(e=>`<button class="btn ghost sm" onclick="swapOrder('${san(id)}',${e.order})">Trocar com Ep.${e.order}</button>`).join('')}
+            ${S.e.filter(e=>e.id!==id).map(e=>`<button class="btn ghost sm" onclick="swapOrder('${san(id)}',${e.order})">Swap with Ep.${e.order}</button>`).join('')}
           </div>
         </div>
         <div class="card" style="margin-top:12px;border-color:rgba(170,24,24,.2)">
-          <div class="ch" style="color:var(--danger)">Zona de perigo</div>
-          <button class="btn danger sm" onclick="delEp('${san(id)}')">Excluir este episódio</button>
+          <div class="ch" style="color:var(--danger)">Zona of perigo</div>
+          <button class="btn danger sm" onclick="delEp('${san(id)}')">Delete este episódio</button>
         </div>
       </div>`;
   }
 }
 
-// Episode actions
+// Episoof actions
 function toggleTag(id,tag){
   const e=S.E(id); if(!e)return;
   e.tags=e.tags||[];
@@ -1096,14 +1239,14 @@ function toggleRes(id,rid){
   // Update ep list meta (researcher names)
   rEpList();
 }
-function delEp(id){ const e=S.E(id); conf('Excluir episódio','Remover "'+e?.title+'"? Esta ação não pode ser desfeita.',()=>{ S.dE(id); _selEp=null; rEpList(); document.getElementById('ep-detail').innerHTML='<div class="ep-detail-empty"><span>Episódio removido</span></div>'; ubadges(); toast('Episódio removido','s'); }); }
+function delEp(id){ const e=S.E(id); conf('Delete episode','Remove "'+e?.title+'"? Esta ação não poof ser desfeita.',()=>{ S.dE(id); _selEp=null; rEpList(); document.getElementById('ep-detail').innerHTML='<div class="ep-detail-empty"><span>Episode removed</span></div>'; ubadges(); toast('Episode removed','s'); }); }
 function addEp(){
   const maxOrd=Math.max(0,...S.data.episodes.map(e=>e.order||0));
   const id=S.uid();
   S.data.episodes.push({id,order:maxOrd+1,year:2027,month:'Jan',title:'Novo episódio',angle:'',researchers:[],tags:[],status:'pending',notes:'',questions:[],excerpts:[],published:{title:'',subtitle:'',intro:'',body:'',keywords:''}});
-  S.save(true); ubadges(); rEpList(); selEp(id); toast('Episódio criado','s');
+  S.save(true); ubadges(); rEpList(); selEp(id); toast('Episode created','s');
 }
-function swapOrder(id,toOrder){ const e=S.E(id); const other=S.data.episodes.find(x=>x.order===toOrder); if(!e||!other)return; const tmp=e.order; e.order=other.order; other.order=tmp; S.save(true); rEpList(); renderEpDetail(id); toast('Ordem atualizada','s'); }
+function swapOrder(id,toOrder){ const e=S.E(id); const other=S.data.episodes.find(x=>x.order===toOrder); if(!e||!other)return; const tmp=e.order; e.order=other.order; other.order=tmp; S.save(true); rEpList(); renderEpDetail(id); toast('Order updated','s'); }
 
 // questions
 S.uEarr = function(epId,field,idx,val){ const e=this.E(epId); if(e&&Array.isArray(e[field])){ e[field][idx]=val; this.save(); } };
@@ -1123,8 +1266,8 @@ function delQ(id,i){
   S.save();
   renderEpTab(id);
 }
-function clearQs(id){ conf('Limpar perguntas','Remover todas as perguntas deste roteiro?',()=>{ S.uE(id,'questions',[]); renderEpTab(id); toast('Perguntas removidas','s'); }); }
-function copyQ(id){ const e=S.E(id); if(!e)return; const txt=(e.questions||[]).map((q,i)=>`${i+1}. ${q}`).join('\n\n'); navigator.clipboard.writeText(txt).then(()=>toast('Copiado!','s')).catch(()=>toast('Erro ao copiar','e')); }
+function clearQs(id){ conf('Limpar questions','Remover todas as questions deste roteiro?',()=>{ S.uE(id,'questions',[]); renderEpTab(id); toast('Questions removidas','s'); }); }
+function copyQ(id){ const e=S.E(id); if(!e)return; const txt=(e.questions||[]).map((q,i)=>`${i+1}. ${q}`).join('\n\n'); navigactor.clipboard.writeText(txt).then(()=>toast('Copied!','s')).catch(()=>toast('Copy error','e')); }
 
 // excerpts
 function addEx(id){
@@ -1151,8 +1294,8 @@ function upub(id,f,v){
   S.save(); // no re-render — fields update in-place
 }
 function fmtPub(id,pre,pos){ const ta=document.getElementById('pub-ed-'+id); if(!ta)return; const s=ta.selectionStart,en=ta.selectionEnd,sel=ta.value.substring(s,en); ta.value=ta.value.substring(0,s)+pre+sel+pos+ta.value.substring(en); ta.focus(); ta.selectionStart=s+pre.length; ta.selectionEnd=s+pre.length+sel.length; upub(id,'body',ta.value); }
-function genPubStruct(id){ const e=S.E(id); if(!e)return; const b=(e.questions||[]).map(q=>`P: ${q}\n\nR: `).join('\n\n---\n\n')||'P: [Pergunta]\n\nR: '; upub(id,'body',b); const ta=document.getElementById('pub-ed-'+id); if(ta)ta.value=b; toast('Estrutura gerada','s'); }
-function cpPub(id){ const e=S.E(id); if(!e)return; const pub=e.published||{}; const txt=[pub.title||e.title,pub.subtitle||e.angle,'\n',pub.intro,'---\n',pub.body].filter(Boolean).join('\n').trim(); navigator.clipboard.writeText(txt).then(()=>toast('Copiado!','s')).catch(()=>toast('Erro','e')); }
+function genPubStruct(id){ const e=S.E(id); if(!e)return; const b=(e.questions||[]).map(q=>`P: ${q}\n\nR: `).join('\n\n---\n\n')||'P: [Pergunta]\n\nR: '; upub(id,'body',b); const ta=document.getElementById('pub-ed-'+id); if(ta)ta.value=b; toast('Structure generated','s'); }
+function cpPub(id){ const e=S.E(id); if(!e)return; const pub=e.published||{}; const txt=[pub.title||e.title,pub.subtitle||e.angle,'\n',pub.intro,'---\n',pub.body].filter(Boolean).join('\n').trim(); navigactor.clipboard.writeText(txt).then(()=>toast('Copied!','s')).catch(()=>toast('Error','e')); }
 
 // ══════════════════════════════════════════════════
 // PEOPLE
@@ -1164,23 +1307,23 @@ function rppl(){
   if(_pf) list=list.filter(p=>p.type===_pf);
 
   const types=[...new Set(S.p.map(p=>p.type))];
-  document.getElementById('ppl-filters').innerHTML=['all',...types].map(t=>`<button class="filt-btn${(_pf===t||(!_pf&&t==='all'))?' on':''}" onclick="setPF('${t}')">${t==='all'?'Todos':TL[t]||t}</button>`).join('');
+  document.getElementById('ppl-filters').innerHTML=['all',...types].map(t=>`<button class="filt-btn${(_pf===t||(!_pf&&t==='all'))?' on':''}" onclick="setPF('${t}')">${t==='all'?'All':TL[t]||t}</button>`).join('');
 
-  const stc={mapeado:'#c4bbb0',prioritário:'#8c5e08',contato:'#244060',agendado:'#8c5e08',entrevistado:'#2f5e3f','a confirmar':'#c4bbb0'};
+  const stc={mapped:'#c4bbb0',priority:'#8c5e08',contact:'#244060',agendado:'#8c5e08',interviewed:'#2f5e3f','to confirm':'#c4bbb0'};
   document.getElementById('ppl-grid').innerHTML=list.length?`
-    <div style="grid-column:1/-1;font-size:12px;color:var(--muted)">${list.length} ator${list.length!==1?'es':''} · <span style="color:var(--sage)">${list.filter(p=>p.region==='Sul Global').length} Sul</span> · <span style="color:var(--slate)">${list.filter(p=>p.region==='Norte Global').length} Norte</span></div>
+    <div style="grid-column:1/-1;font-size:12px;color:var(--muted)">${list.length} actor${list.length!==1?'es':''} · <span style="color:var(--sage)">${list.filter(p=>p.region==='Global South').length} Sul</span> · <span style="color:var(--slate)">${list.filter(p=>p.region==='Global North').length} Norte</span></div>
     ${list.map(p=>{const bg=clr(p.id); return`<div class="pc">
       <div class="pc-top">${pav(p,42)}<div style="flex:1;min-width:0">${tbdg(p.type)}<div class="pc-name" style="margin-top:3px">${san(p.name)}</div><div class="pc-org">${san(p.org)}</div><div class="pc-loc">📍 ${san(p.city||p.country||'—')}</div></div></div>
       <div style="display:flex;flex-wrap:wrap;gap:3px;min-height:20px;margin-bottom:9px">${(p.themes||[]).slice(0,3).map(t=>`<span style="font-size:10px;background:var(--cream2);color:var(--muted);padding:2px 7px;border-radius:10px">${san(t)}</span>`).join('')}</div>
       <div class="pc-foot">
-        <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:${stc[p.status]||'#c4bbb0'};display:inline-block"></span>${san(p.status)} · <span style="color:${p.region==='Sul Global'?'var(--sage)':'var(--slate)'}">${san(p.region||'')}</span></span>
+        <span style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:${stc[p.status]||'#c4bbb0'};display:inline-block"></span>${san(p.status)} · <span style="color:${p.region==='Global South'?'var(--sage)':'var(--slate)'}">${san(p.region||'')}</span></span>
         <div class="pc-acts">
           <button class="pca" onclick="openPModal('${san(p.id)}')">Editar</button>
           <button class="pca red" onclick="delP('${san(p.id)}')">×</button>
         </div>
       </div>
     </div>`; }).join('')}`
-    :`<div class="empty" style="grid-column:1/-1">Nenhum resultado.<br><button class="btn acc sm" onclick="openPModal()" style="margin-top:12px">+ Cadastrar</button></div>`;
+    :`<div class="empty" style="grid-column:1/-1">No results.<br><button class="btn acc sm" onclick="openPModal()" style="margin-top:12px">+ Register</button></div>`;
 }
 function setPF(t){ _pf=t==='all'?'':t; rppl(); }
 
@@ -1189,35 +1332,35 @@ let _peid=null;
 function openPModal(id){
   _peid=id||null;
   const p=id?S.P(id):{};
-  document.getElementById('pmod-title').textContent=id?'Editar: '+(p?.name||''):'Cadastrar pessoa';
+  document.getElementById('pmod-title').textContent=id?'Edit: '+(p?.name||''):'Register person';
   document.getElementById('pmod-body').innerHTML=`
     <div class="g3" style="margin-bottom:11px">
-      <div class="fg"><label class="fl">Nome *</label><input class="fi" id="pf-name" value="${san(p?.name||'')}"></div>
-      <div class="fg"><label class="fl">Organização</label><input class="fi" id="pf-org" value="${san(p?.org||'')}"></div>
-      <div class="fg"><label class="fl">Tipo</label><select class="fsel" id="pf-type">${TYPES.map(t=>`<option value="${t}"${p?.type===t?' selected':''}>${TL[t]||t}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Name *</label><input class="fi" id="pf-name" value="${san(p?.name||'')}"></div>
+      <div class="fg"><label class="fl">Organization</label><input class="fi" id="pf-org" value="${san(p?.org||'')}"></div>
+      <div class="fg"><label class="fl">Type</label><select class="fsel" id="pf-type">${TYPES.map(t=>`<option value="${t}"${p?.type===t?' selected':''}>${TL[t]||t}</option>`).join('')}</select></div>
     </div>
     <div class="g3" style="margin-bottom:11px">
-      <div class="fg"><label class="fl">País</label><input class="fi" id="pf-country" value="${san(p?.country||'')}"></div>
-      <div class="fg"><label class="fl">Cidade</label><input class="fi" id="pf-city" value="${san(p?.city||'')}"></div>
-      <div class="fg"><label class="fl">Região</label><select class="fsel" id="pf-region">${REGIONS.map(r=>`<option${p?.region===r?' selected':''}>${r}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Country</label><input class="fi" id="pf-country" value="${san(p?.country||'')}"></div>
+      <div class="fg"><label class="fl">City</label><input class="fi" id="pf-city" value="${san(p?.city||'')}"></div>
+      <div class="fg"><label class="fl">Region</label><select class="fsel" id="pf-region">${REGIONS.map(r=>`<option${p?.region===r?' selected':''}>${r}</option>`).join('')}</select></div>
     </div>
     <div class="g3" style="margin-bottom:11px">
       <div class="fg"><label class="fl">Status</label><select class="fsel" id="pf-status">${PST.map(v=>`<option${p?.status===v?' selected':''}>${v}</option>`).join('')}</select></div>
-      <div class="fg"><label class="fl">Prioridade</label><select class="fsel" id="pf-prio">${PRIS.map(v=>`<option${p?.priority===v?' selected':''}>${v}</option>`).join('')}</select></div>
+      <div class="fg"><label class="fl">Priority</label><select class="fsel" id="pf-prio">${PRIS.map(v=>`<option${p?.priority===v?' selected':''}>${v}</option>`).join('')}</select></div>
       <div class="fg"><label class="fl">E-mail</label><input class="fi" id="pf-email" value="${san(p?.email||'')}"></div>
     </div>
     <div class="g3" style="margin-bottom:11px">
       <div class="fg"><label class="fl">ORCID / Lattes</label><input class="fi" id="pf-orcid" value="${san(p?.orcid||'')}"></div>
       <div class="fg"><label class="fl">URL da foto</label><input class="fi" id="pf-photo" value="${san(p?.photo||'')}" placeholder="https://…"></div>
-      <div class="fg"><label class="fl">Temas (vírgula)</label><input class="fi" id="pf-themes" value="${san((p?.themes||[]).join(', '))}"></div>
+      <div class="fg"><label class="fl">Themes (comma)</label><input class="fi" id="pf-themes" value="${san((p?.themes||[]).join(', '))}"></div>
     </div>
-    <div class="fg" style="margin-bottom:11px"><label class="fl">Biografia</label><textarea class="fta" id="pf-bio" rows="3">${san(p?.bio||'')}</textarea></div>
-    <div class="fg" style="margin-bottom:14px"><label class="fl">Publicações (uma por linha)</label><textarea class="fta" id="pf-pubs" rows="4">${san(p?.pubs||'')}</textarea></div>
-    <div class="fg" style="margin-bottom:14px"><label class="fl">Notas</label><textarea class="fta" id="pf-notes" rows="2">${san(p?.notes||'')}</textarea></div>
+    <div class="fg" style="margin-bottom:11px"><label class="fl">Biography</label><textarea class="fta" id="pf-bio" rows="3">${san(p?.bio||'')}</textarea></div>
+    <div class="fg" style="margin-bottom:14px"><label class="fl">Publications (one per line)</label><textarea class="fta" id="pf-pubs" rows="4">${san(p?.pubs||'')}</textarea></div>
+    <div class="fg" style="margin-bottom:14px"><label class="fl">Notes</label><textarea class="fta" id="pf-notes" rows="2">${san(p?.notes||'')}</textarea></div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn ghost" onclick="closePModal()">Cancelar</button>
-      ${id?`<button class="btn danger sm" onclick="delP('${san(id)}');closePModal()">Excluir</button>`:''}
-      <button class="btn acc" onclick="saveP()">Salvar</button>
+      <button class="btn ghost" onclick="closePModal()">Cancel</button>
+      ${id?`<button class="btn danger sm" onclick="delP('${san(id)}');closePModal()">Delete</button>`:''}
+      <button class="btn acc" onclick="saveP()">Save</button>
     </div>`;
   document.getElementById('pmod').classList.add('on');
 }
@@ -1232,16 +1375,16 @@ function saveP(){
   // Only re-render ep detail if we're on the ficha tab (shows researcher info)
   if(_selEp && _epTab==='ficha') renderEpTab(_selEp);
   else if(_selEp) rEpList();
-  toast(name+(_peid?' atualizado(a)':' cadastrado(a)'),'s');
+  toast(name+(_peid?' updated':' registered'),'s');
 }
-function delP(id){ const p=S.P(id); conf('Excluir pessoa','Remover "'+p?.name+'"?',()=>{ S.dP(id); rppl(); ubadges(); if(_selEp) renderEpDetail(_selEp); toast('Removido(a)','s'); }); }
+function delP(id){ const p=S.P(id); conf('Delete pessoa','Remove "'+p?.name+'"?',()=>{ S.dP(id); rppl(); ubadges(); if(_selEp) renderEpDetail(_selEp); toast('Removed','s'); }); }
 
 // ══════════════════════════════════════════════════
 // MOBILE NAV
 // ══════════════════════════════════════════════════
 function isMob(){ return window.innerWidth<=768; }
 
-// ── Mobile episode sheet ──
+// ── Mobile episoof sheet ──
 let _mobEpTab = 'ficha';
 function mobEpOpen(id){
   const ep = S.E(id); if(!ep) return;
@@ -1258,7 +1401,7 @@ function mobEpClose(){
 function mobEpRender(id){
   const ep = S.E(id); if(!ep) return;
   // render tabs
-  const tabs = [['ficha','Ficha'],['roteiro','Roteiro'],['trechos','Trechos'],['pub','Publicação'],['notas','Notas']];
+  const tabs = [['ficha','Profile'],['roteiro','Guide'],['trechos','Excerpts'],['pub','Publication'],['notas','Notes']];
   document.getElementById('mob-ep-tabs').innerHTML = tabs.map(([k,l])=>
     `<button class="ep-tab${_mobEpTab===k?' on':''}" onclick="setMobEpTab('${k}','${id}')">${l}</button>`
   ).join('');
@@ -1299,14 +1442,14 @@ function renderMobEpTab(id, box){
         </div>
         <div class="fg"><label class="fl">Status</label>
           <select class="fsel" onchange="S.uE('${san(id)}','status',this.value);rEpList()">
-            ${['pending','scheduled','done','published'].map(v=>`<option value="${v}"${ep.status===v?' selected':''}>${{pending:'Pendente',scheduled:'Agendado',done:'Realizado',published:'Publicado'}[v]}</option>`).join('')}
+            ${['pending','scheduled','done','published'].map(v=>`<option value="${v}"${ep.status===v?' selected':''}>${{pending:'Pending',scheduled:'Scheduled',done:'Completed',published:'Published'}[v]}</option>`).join('')}
           </select>
         </div>
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin:16px 0 10px">Tags temáticas</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
           ${Object.entries(TAGS).map(([k,v])=>`<span class="chip${(ep.tags||[]).includes(k)?' on':''}" style="background:${(ep.tags||[]).includes(k)?TC[k]+'18':'var(--cream2)'};color:${TC[k]};border-color:${(ep.tags||[]).includes(k)?TC[k]:'transparent'}" onclick="toggleTag('${san(id)}','${k}');mobRefreshTags('${san(id)}')">${v}</span>`).join('')}
         </div>
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:10px">Pesquisadores vinculados</div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:10px">Linked researchers</div>
         ${res.map(p=>`<div class="pessoa-chip" style="margin-bottom:8px">
           ${pav(p,36)}<div style="flex:1;min-width:0"><div class="pessoa-chip-name">${san(p.name)}</div><div class="pessoa-chip-sub">${san(p.org||'')}</div></div>
           <button class="btn danger xs" onclick="toggleRes('${san(id)}','${san(p.id)}');renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">× </button>
@@ -1325,13 +1468,13 @@ function renderMobEpTab(id, box){
             <span class="q-n" style="font-size:12px;min-width:24px">${i+1}.</span>
             <textarea class="q-txt" rows="2" style="font-size:15px;padding:4px 0" oninput="autoH(this);S.uEarr('${san(id)}','questions',${i},this.value)">${san(q)}</textarea>
             <button class="q-del" onclick="delQ('${san(id)}',${i});renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))">×</button>
-          </div>`).join('') : '<div style="color:var(--faint);font-size:13px;padding:8px 0 16px">Nenhuma pergunta ainda.</div>'}
+          </div>`).join('') : '<div style="color:var(--faint);font-size:13px;padding:8px 0 16px">Nenhuma question ainda.</div>'}
       </div>
       <div class="add-row" style="margin-top:8px">
-        <textarea class="add-inp" id="mob-nq-${san(id)}" placeholder="Nova pergunta…" rows="2" style="font-size:15px;min-height:54px;border-radius:var(--r);padding:10px 12px"></textarea>
+        <textarea class="add-inp" id="mob-nq-${san(id)}" placeholder="Nova question…" rows="2" style="font-size:15px;min-height:54px;border-radius:var(--r);padding:10px 12px"></textarea>
       </div>
-      <button class="btn acc" style="width:100%;margin-top:8px" onclick="mobAddQ('${san(id)}')">+ Adicionar pergunta</button>
-      ${ep.questions?.length ? `<button class="btn ghost" style="width:100%;margin-top:8px" onclick="copyQ('${san(id)}');toast('Copiado!','s')">📋 Copiar roteiro</button>` : ''}
+      <button class="btn acc" style="width:100%;margin-top:8px" onclick="mobAddQ('${san(id)}')">+ Add question</button>
+      ${ep.questions?.length ? `<button class="btn ghost" style="width:100%;margin-top:8px" onclick="copyQ('${san(id)}');toast('Copied!','s')">📋 Copy roteiro</button>` : ''}
     </div>`;
     setTimeout(()=>{ document.querySelectorAll('.q-txt').forEach(t=>autoH(t)); }, 20);
   }
@@ -1343,22 +1486,22 @@ function renderMobEpTab(id, box){
         <div class="ex-txt">"${san(ex.text)}"</div>
       </div>`).join('')||'<div style="color:var(--faint);font-size:13px;padding:8px 0 16px">Nenhum trecho ainda.</div>'}
       <div class="card" style="margin-top:8px">
-        <div class="ch">Registrar trecho</div>
-        <div class="fg"><label class="fl">Trecho</label><textarea class="fta" id="mob-nex-t-${san(id)}" rows="3" placeholder="Cole ou escreva…" style="font-size:15px"></textarea></div>
-        <div class="fg"><label class="fl">Quem disse?</label>
+        <div class="ch">Record excerpt</div>
+        <div class="fg"><label class="fl">Excerpt</label><textarea class="fta" id="mob-nex-t-${san(id)}" rows="3" placeholder="Cole ou escreva…" style="font-size:15px"></textarea></div>
+        <div class="fg"><label class="fl">Who said it?</label>
           <select class="fsel" id="mob-nex-sp-${san(id)}">
-            <option value="">— Selecione —</option>
+            <option value="">— Select —</option>
             ${res.map(p=>`<option value="${san(p.name)}">${san(p.name)}</option>`).join('')}
-            <option value="_outro">Outro…</option>
+            <option value="_outro">Other…</option>
           </select>
         </div>
         <div class="fg"><label class="fl">Tema</label>
           <select class="fsel" id="mob-nex-tag-${san(id)}">
-            <option value="">Sem tema</option>
+            <option value="">No theme</option>
             ${Object.entries(TAGS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}
           </select>
         </div>
-        <button class="btn acc" style="width:100%" onclick="mobAddEx('${san(id)}')">Salvar trecho</button>
+        <button class="btn acc" style="width:100%" onclick="mobAddEx('${san(id)}')">Save trecho</button>
       </div>
     </div>`;
   }
@@ -1366,33 +1509,31 @@ function renderMobEpTab(id, box){
     const pub = ep.published||{};
     box.innerHTML = `<div>
       <div style="padding:14px;background:#fff;border-bottom:1px solid var(--rule)">
-        <div class="fg"><label class="fl">Título do post</label><input class="fi" value="${san(pub.title||ep.title||'')}" oninput="upub('${san(id)}','title',this.value)" style="font-size:15px"></div>
-        <div class="fg"><label class="fl">Subtítulo</label><input class="fi" value="${san(pub.subtitle||ep.angle||'')}" oninput="upub('${san(id)}','subtitle',this.value)" style="font-size:15px"></div>
-        <div class="fg" style="margin:0"><label class="fl">Introdução</label><textarea class="fta" rows="3" oninput="upub('${san(id)}','intro',this.value)" placeholder="Contextualize a entrevista…" style="font-size:15px">${san(pub.intro||'')}</textarea></div>
+        <div class="fg"><label class="fl">Post title</label><input class="fi" value="${san(pub.title||ep.title||'')}" oninput="upub('${san(id)}','title',this.value)" style="font-size:15px"></div>
+        <div class="fg"><label class="fl">Subtitle</label><input class="fi" value="${san(pub.subtitle||ep.angle||'')}" oninput="upub('${san(id)}','subtitle',this.value)" style="font-size:15px"></div>
+        <div class="fg" style="margin:0"><label class="fl">Introduction</label><textarea class="fta" rows="3" oninput="upub('${san(id)}','intro',this.value)" placeholder="Contextualize a entrevista…" style="font-size:15px">${san(pub.intro||'')}</textarea></div>
       </div>
       <div style="padding:10px 14px;background:var(--cream2);border-bottom:1px solid var(--rule);display:flex;gap:6px;flex-wrap:wrap">
-        ${[['P:','**P:** ',''],['R:','**R:** ',''],['> ','> ','']].map(([l,pre,pos])=>`<button class="tool-btn" onclick="fmtMobPub('${san(id)}','${pre.replace(/'/g,"\'")}','${pos.replace(/'/g,"\'")}') ">${l}</button>`).join('')}
-        <button class="tool-btn" onclick="genPubStruct('${san(id)}');renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))" style="margin-left:auto;border-color:var(--terra);color:var(--terra)">Gerar P/R</button>
+        ${[['P:','**Q:** ',''],['R:','**A:** ',''],['> ','> ','']].map(([l,pre,pos])=>`<button class="tool-btn" onclick="fmtMobPub('${san(id)}','${pre.replace(/'/g,"\'")}','${pos.replace(/'/g,"\'")}') ">${l}</button>`).join('')}
+        <button class="tool-btn" onclick="genPubStruct('${san(id)}');renderMobEpTab('${san(id)}',document.getElementById('mob-ep-content'))" style="margin-left:auto;border-color:var(--terra);color:var(--terra)">Generate Q/A</button>
       </div>
-      <textarea id="mob-pub-ed-${san(id)}" style="width:100%;min-height:300px;padding:16px;font-size:15px;line-height:1.8;font-family:var(--fb);border:none;resize:none;background:#fff;outline:none;display:block" placeholder="P: Primeira pergunta…
-
-R: Resposta…" oninput="upub('${san(id)}','body',this.value)">${san(pub.body||'')}</textarea>
+      <textarea id="mob-pub-ed-${san(id)}" style="width:100%;min-height:300px;padding:16px;font-size:15px;line-height:1.8;font-family:var(--fb);border:none;resize:none;background:#fff;outline:none;display:block" placeholder="Q: First question…&#10;&#10;A: Answer…" oninput="upub('${san(id)}','body',this.value)">${san(pub.body||'')}</textarea>
       <div style="padding:12px 14px;background:#fff;border-top:1px solid var(--rule)">
-        <button class="btn ghost" style="width:100%" onclick="cpPub('${san(id)}')">📋 Copiar texto completo</button>
+        <button class="btn ghost" style="width:100%" onclick="cpPub('${san(id)}')">📋 Copy full text</button>
       </div>
     </div>`;
   }
   else if(_mobEpTab === 'notas'){
     box.innerHTML = `<div style="padding:14px">
-      <div class="fg"><label class="fl">Notas internas</label>
-        <textarea class="fta" rows="8" placeholder="Observações, contatos, lembretes…" oninput="S.uE('${san(id)}','notes',this.value)" style="font-size:15px">${san(ep.notes||'')}</textarea>
+      <div class="fg"><label class="fl">Internal notes</label>
+        <textarea class="fta" rows="8" placeholder="Notes, contacts, reminders…" oninput="S.uE('${san(id)}','notes',this.value)" style="font-size:15px">${san(ep.notes||'')}</textarea>
       </div>
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin:16px 0 8px">Reordenar na série</div>
-      <div style="font-size:13px;color:var(--ink3);margin-bottom:10px">Posição atual: <strong>Ep. ${ep.order}</strong> de ${S.e.length}</div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin:16px 0 8px">Reorder in series</div>
+      <div style="font-size:13px;color:var(--ink3);margin-bottom:10px">Current position: <strong>Ep. ${ep.order}</strong> of ${S.e.length}</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px">
-        ${S.e.filter(e=>e.id!==id).map(e=>`<button class="btn ghost sm" onclick="swapOrder('${san(id)}',${e.order});toast('Ordem atualizada','s')">↕ Ep.${e.order}</button>`).join('')}
+        ${S.e.filter(e=>e.id!==id).map(e=>`<button class="btn ghost sm" onclick="swapOrder('${san(id)}',${e.order});toast('Order updated','s')">↕ Ep.${e.order}</button>`).join('')}
       </div>
-      <button class="btn danger" style="width:100%" onclick="if(confirm('Excluir episódio?')){mobEpClose();delEp('${san(id)}');}">Excluir episódio</button>
+      <button class="btn danger" style="width:100%" onclick="if(confirm('Delete episode?')){mobEpClose();delEp('${san(id)}');}">Delete episode</button>
     </div>`;
   }
 }
@@ -1465,7 +1606,7 @@ function renderMobMapMarkers(){
         <div style="width:40px;height:40px;border-radius:50%;background:${bg};border:2.5px solid #fff;box-shadow:0 2px 10px rgba(24,20,15,.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;font-family:'Fraunces',serif">${san(ini(p.name))}</div>
         <div style="width:1.5px;height:7px;background:${bg};opacity:.5"></div>
         <div style="width:4px;height:4px;border-radius:50%;background:${bg};opacity:.5"></div>
-        <div style="margin-top:2px;font-size:9px;font-weight:600;background:rgba(255,255,255,.95);color:${bg};padding:1px 6px;border-radius:8px;white-space:nowrap;box-shadow:0 1px 3px rgba(24,20,15,.1);font-family:'DM Sans',sans-serif">${san(p.name.split(' ')[0])}</div>
+        <div style="margin-top:2px;font-size:9px;font-weight:600;background:rgba(255,255,255,.95);color:${bg};padding:1px 6px;border-radius:8px;white-space:nowrap;box-shadow:0 1px 3px rgba(24,20,15,.1);font-family:'Source Sans 3',sans-serif">${san(p.name.split(' ')[0])}</div>
       </div>`,
       iconSize:[80,68],iconAnchor:[40,58]
     });
@@ -1480,7 +1621,7 @@ function openMobMapPanel(id){
   document.getElementById('mob-map-panel-body').innerHTML=`
     <div style="display:flex;gap:8px;margin-bottom:10px">${pav(p,36)}<div>${tbdg(p.type)}<div style="font-size:12px;color:var(--muted);margin-top:2px">${san(p.org||'—')}</div><div style="font-size:11px;color:var(--terra)">${san(p.city||'')}${p.city&&p.country?', ':''}${san(p.country||'')}</div></div></div>
     ${p.bio?`<div style="font-size:12px;color:var(--ink3);line-height:1.55;margin-bottom:10px">${san(p.bio.substring(0,140))}${p.bio.length>140?'…':''}</div>`:''}
-    ${eps.length?`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--faint);margin-bottom:6px">Episódios</div>
+    ${eps.length?`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--faint);margin-bottom:6px">Episodes</div>
     ${eps.map(e=>`<div style="padding:8px 10px;background:var(--cream);border-radius:var(--r);margin-bottom:5px;font-size:13px;cursor:pointer" onclick="mobMapClose();setTimeout(()=>selEp('${san(e.id)}'),200)">
       <span style="font-family:var(--fm);font-size:10px;color:var(--terra)">Ep.${e.order} · ${san(e.month)} ${e.year}</span><br>${san(e.title)}</div>`).join('')}`:''}`;
   const panel=document.getElementById('mob-map-panel');
@@ -1500,9 +1641,39 @@ document.addEventListener('click',e=>{ if(_moreOpen&&!e.target.closest('#mob-mor
 // ══════════════════════════════════════════════════
 // SUPABASE
 // ══════════════════════════════════════════════════
+// SUPABASE — fetch direto (sem cliente JS para evitar DataCloneError)
+// ══════════════════════════════════════════════════
 const SB_URL = 'https://ngeogbbsvohgscyeqbvr.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZW9nYmJzdm9oZ3NjeWVxYnZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDk1NTcsImV4cCI6MjA5MDYyNTU1N30._ajMoa521ijfoFcSlLxH6htzGGZRRS32mzoLIWg7V5k';
 let _sb=null,_sbOn=false,_sbCh=null,_sbLast=null;
+
+// Wrapper fetch: retorna {data, error} sem nenhum objeto não-clonável
+async function sbFetch(path, opts={}) {
+  const {prefer, body, method='GET', headers:extraHeaders={}} = opts;
+  const fetchOpts = {
+    method,
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': prefer || 'return=minimal',
+      ...extraHeaders
+    }
+  };
+  if(body !== undefined) fetchOpts.body = body;
+  let res;
+  try { res = await fetch(SB_URL + '/rest/v1/' + path, fetchOpts); }
+  catch(e) { return { data: null, error: e.message }; }
+  if (!res.ok) {
+    let msg = res.statusText;
+    try { const j = await res.json(); msg = j.message || j.error || msg; } catch(e) {}
+    return { data: null, error: msg };
+  }
+  let data = null;
+  const ct = res.headers.get('content-type')||'';
+  if (ct.includes('json')) { try { data = await res.json(); } catch(e) {} }
+  return { data, error: null };
+}
 
 function sbStat(type,msg){
   const bar=document.getElementById('syncbar'),dot=document.getElementById('sdot'),span=document.getElementById('smsg');
@@ -1510,42 +1681,42 @@ function sbStat(type,msg){
   bar.classList.add('on');
   dot.className='sdot'+(type==='ok'?' pulse':type==='err'?' err':' saving');
   span.textContent=msg;
-  if(_sbLast)document.getElementById('stime').textContent=_sbLast.toLocaleTimeString('pt-BR');
+  if(_sbLast)document.getElementById('stime').textContent=_sbLast.toLocaleTimeString('en');
   bar.style.background=type==='err'?'#5a1010':type==='saving'?'#2a2015':'';
   if(type==='ok')setTimeout(()=>{if(bar)bar.style.background='';},2000);
 }
 
 async function sbConnect(){
-  sbStat('saving','Conectando…');
+  sbStat('saving','Connecting…');
   try{
-    _sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
-    const {error}=await _sb.from('cm_people').select('id').limit(1);
-    if(error&&!['PGRST116','42P01'].includes(error.code)) throw new Error(error.message);
+    const {error} = await sbFetch('cm_people?select=id&limit=1', {prefer:'return=representation'});
+    if(error) throw new Error(error);
     _sbOn=true;
+    _sb=true; // flag only — no client object
     await sbLoad();
     sbRealtime();
-    sbStat('ok','✓ Conectado ao Supabase');
+    sbStat('ok','✓ Connected to Supabase');
   }catch(e){
-    _sb=null;_sbOn=false;
-    sbStat('err','Erro: '+e.message+' — toque ↻');
+    _sbOn=false;
+    sbStat('err','Error: '+e.message+' — ↻ Sync');
     console.error('[SB]',e);
   }
 }
 
 async function sbLoad(){
   try{
-    const [pR,eR]=await Promise.all([
-      _sb.from('cm_people').select('*').order('id'),
-      _sb.from('cm_episodes').select('*').order('ep_order'),
+    const [pR,eR] = await Promise.all([
+      sbFetch('cm_people?select=*&order=id', {prefer:'return=representation'}),
+      sbFetch('cm_episodes?select=*&order=ep_order', {prefer:'return=representation'}),
     ]);
-    if(pR.error)throw pR.error;
-    if(eR.error)throw eR.error;
-    S.data.people=(pR.data||[]).map(r=>({id:r.id,name:r.name,org:r.org||'',type:r.type||'other',country:r.country||'',city:r.city||'',region:r.region||'',lat:r.lat||0,lng:r.lng||0,photo:r.photo||'',email:r.email||'',orcid:r.orcid||'',priority:r.priority||'média',status:r.status||'mapeado',bio:r.bio||'',pubs:r.pubs||'',themes:Array.isArray(r.themes)?r.themes:[],notes:r.notes||''}));
+    if(pR.error) throw new Error(pR.error);
+    if(eR.error) throw new Error(eR.error);
+    S.data.people=(pR.data||[]).map(r=>({id:r.id,name:r.name,org:r.org||'',type:r.type||'other',country:r.country||'',city:r.city||'',region:r.region||'',lat:r.lat||0,lng:r.lng||0,photo:r.photo||'',email:r.email||'',orcid:r.orcid||'',priority:r.priority||'medium',status:r.status||'mapped',bio:r.bio||'',pubs:r.pubs||'',themes:Array.isArray(r.themes)?r.themes:[],notes:r.notes||''}));
     S.data.episodes=(eR.data||[]).map(r=>({id:r.id,order:r.ep_order||1,year:r.year||2026,month:r.month||'Jan',title:r.title||'',angle:r.angle||'',status:r.status||'pending',tags:Array.isArray(r.tags)?r.tags:[],researchers:Array.isArray(r.researchers)?r.researchers:[],notes:r.notes||'',questions:Array.isArray(r.questions)?r.questions:[],excerpts:Array.isArray(r.excerpts)?r.excerpts:[],published:r.published||{}}));
     _sbLast=new Date();
-    sbStat('ok','✓ Dados carregados · '+_sbLast.toLocaleTimeString('pt-BR'));
+    sbStat('ok','✓ Data loaded · '+_sbLast.toLocaleTimeString('en'));
     rerender();
-  }catch(e){ sbStat('err','Erro ao carregar: '+e.message); }
+  }catch(e){ sbStat('err','Error loading: '+e.message); }
 }
 
 function rerender(){
@@ -1556,38 +1727,49 @@ function rerender(){
 }
 
 function sbRealtime(){
-  if(!_sb||_sbCh)return;
-  _sbCh=_sb.channel('cm_v5')
-    .on('postgres_changes',{event:'*',schema:'public',table:'cm_people'},()=>sbLoad())
-    .on('postgres_changes',{event:'*',schema:'public',table:'cm_episodes'},()=>sbLoad())
-    .subscribe(st=>{ if(st==='SUBSCRIBED')sbStat('ok','Realtime ativo'); if(st==='CHANNEL_ERROR')sbStat('err','Erro realtime'); });
+  if(_sbCh) return;
+  _sbCh=true;
+  sbStat('ok','✓ Sync active (30s)');
+  setInterval(()=>{ if(!document.hidden && _sbOn) sbLoad(); }, 30000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden && _sbOn) sbLoad(); });
 }
 
 let _sbWritePending=false, _sbWriteTimer=null;
 async function sbWrite(){
-  // Coalesce rapid writes — only write once per 1.5s max
-  if(!_sbOn||!_sb)return;
+  if(!_sbOn) return;
   clearTimeout(_sbWriteTimer);
-  if(_sbWritePending)return;
+  if(_sbWritePending) return;
   _sbWritePending=true;
   _sbWriteTimer=setTimeout(async()=>{
     _sbWritePending=false;
-    sbStat('saving','Salvando…');
+    sbStat('saving','Saving…');
     try{
-      const snap = JSON.parse(JSON.stringify(S.data)); // snapshot to avoid mid-write mutations
-      const pr=await Promise.allSettled([
-        snap.people.length?_sb.from('cm_people').upsert(snap.people.map(p=>({id:p.id,name:p.name,org:p.org||'',type:p.type||'other',country:p.country||'',city:p.city||'',region:p.region||'',lat:p.lat||0,lng:p.lng||0,photo:p.photo||'',email:p.email||'',orcid:p.orcid||'',priority:p.priority||'média',status:p.status||'mapeado',bio:p.bio||'',pubs:p.pubs||'',themes:p.themes||[],notes:p.notes||''})),{onConflict:'id'}):Promise.resolve({error:null}),
-        snap.episodes.length?_sb.from('cm_episodes').upsert(snap.episodes.map(e=>({id:e.id,ep_order:e.order||1,year:e.year||2026,month:e.month||'Jan',title:e.title||'',angle:e.angle||'',status:e.status||'pending',tags:e.tags||[],researchers:e.researchers||[],notes:e.notes||'',questions:e.questions||[],excerpts:e.excerpts||[],published:e.published||{}})),{onConflict:'id'}):Promise.resolve({error:null}),
-      ]);
-      const errs=pr.filter(r=>r.status==='fulfilled'&&r.value?.error).map(r=>r.value.error.message);
-      if(errs.length){sbStat('err','Erro: '+errs[0]);}
-      else{_sbLast=new Date();sbStat('ok','✓ Salvo · '+_sbLast.toLocaleTimeString('pt-BR'));}
-    }catch(e){sbStat('err','Erro: '+e.message);}
-  }, 1500);
+      const snap=JSON.parse(JSON.stringify(S.data));
+      const errs=[];
+      if(snap.people.length){
+        const {error}=await sbFetch('cm_people', {
+          method:'POST',
+          prefer:'resolution=merge-duplicates,return=minimal',
+          body:JSON.stringify(snap.people.map(p=>({id:p.id,name:p.name,org:p.org||'',type:p.type||'other',country:p.country||'',city:p.city||'',region:p.region||'',lat:p.lat||0,lng:p.lng||0,photo:p.photo||'',email:p.email||'',orcid:p.orcid||'',priority:p.priority||'medium',status:p.status||'mapped',bio:p.bio||'',pubs:p.pubs||'',themes:p.themes||[],notes:p.notes||''})))
+        });
+        if(error) errs.push(error);
+      }
+      if(snap.episodes.length){
+        const {error}=await sbFetch('cm_episodes', {
+          method:'POST',
+          prefer:'resolution=merge-duplicates,return=minimal',
+          body:JSON.stringify(snap.episodes.map(e=>({id:e.id,ep_order:e.order||1,year:e.year||2026,month:e.month||'Jan',title:e.title||'',angle:e.angle||'',status:e.status||'pending',tags:e.tags||[],researchers:e.researchers||[],notes:e.notes||'',questions:e.questions||[],excerpts:e.excerpts||[],published:e.published||{}})))
+        });
+        if(error) errs.push(error);
+      }
+      if(errs.length){sbStat('err','Error: '+errs[0]);}
+      else{_sbLast=new Date();sbStat('ok','✓ Saved · '+_sbLast.toLocaleTimeString('en'));}
+    }catch(e){sbStat('err','Error: '+e.message);}
+  },1500);
 }
 
-async function sbSync(){ if(!_sbOn){await sbConnect();}else{sbStat('saving','Sincronizando…');await sbLoad();} }
-function sbDisc(){ if(_sbCh&&_sb)_sb.removeChannel(_sbCh); _sb=null;_sbOn=false;_sbCh=null; document.getElementById('syncbar').classList.remove('on'); toast('Desconectado','w'); }
+async function sbSync(){ if(!_sbOn){await sbConnect();}else{sbStat('saving','Syncing…');await sbLoad();} }
+function sbDisc(){ _sb=null;_sbOn=false;_sbCh=null; document.getElementById('syncbar').classList.remove('on'); toast('Disconnected','w'); }
 
 // ══════════════════════════════════════════════════
 // DASHBOARD MAP
@@ -1620,7 +1802,7 @@ function rMapMarkers(){
         <div style="width:38px;height:38px;border-radius:50%;background:${bg};border:2.5px solid #fff;box-shadow:0 2px 10px rgba(24,20,15,.22);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;font-family:'Fraunces',serif;overflow:hidden">${p.photo?`<img src="${san(p.photo)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.style.display='none'">${initials}`:initials}</div>
         <div style="width:1.5px;height:8px;background:${bg};opacity:.5;margin:0 auto"></div>
         <div style="width:4px;height:4px;border-radius:50%;background:${bg};opacity:.5"></div>
-        <div style="margin-top:2px;font-size:9px;font-weight:600;background:rgba(255,255,255,.95);color:${bg};padding:1px 6px;border-radius:8px;white-space:nowrap;box-shadow:0 1px 4px rgba(24,20,15,.12);font-family:'DM Sans',sans-serif">${san(p.name.split(' ')[0])}</div>
+        <div style="margin-top:2px;font-size:9px;font-weight:600;background:rgba(255,255,255,.95);color:${bg};padding:1px 6px;border-radius:8px;white-space:nowrap;box-shadow:0 1px 4px rgba(24,20,15,.12);font-family:'Source Sans 3',sans-serif">${san(p.name.split(' ')[0])}</div>
       </div>`,
       iconSize:[80,70],iconAnchor:[40,58]
     });
@@ -1632,10 +1814,10 @@ function rMapMarkers(){
 function mapFilter(region){
   _mapFilter=region;
   // highlight active filter btn
-  document.getElementById('mf-sul')?.classList.toggle('acc',region==='Sul Global');
-  document.getElementById('mf-sul')?.classList.toggle('ghost',region!=='Sul Global');
-  document.getElementById('mf-norte')?.classList.toggle('acc',region==='Norte Global');
-  document.getElementById('mf-norte')?.classList.toggle('ghost',region!=='Norte Global');
+  document.getElementById('mf-sul')?.classList.toggle('acc',region==='Global South');
+  document.getElementById('mf-sul')?.classList.toggle('ghost',region!=='Global South');
+  document.getElementById('mf-norte')?.classList.toggle('acc',region==='Global North');
+  document.getElementById('mf-norte')?.classList.toggle('ghost',region!=='Global North');
   rMapMarkers();
   if(!region&&_map) _map.setView([15,10],2);
 }
@@ -1655,7 +1837,7 @@ function openMapPanel(id){
       </div>
     </div>
     ${p.bio?`<div style="font-size:12px;color:var(--ink3);line-height:1.55;margin-bottom:10px">${san(p.bio.substring(0,160))}${p.bio.length>160?'…':''}</div>`:''}
-    ${eps.length?`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--faint);margin-bottom:6px">Episódios</div>
+    ${eps.length?`<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--faint);margin-bottom:6px">Episodes</div>
     ${eps.map(e=>`<div style="padding:6px 8px;background:var(--cream);border-radius:var(--r);margin-bottom:5px;cursor:pointer;font-size:12px;color:var(--ink2);transition:background .13s" onclick="go('eps',null);setTimeout(()=>selEp('${san(e.id)}'),80)" onmouseover="this.style.background='var(--terra-l)'" onmouseout="this.style.background='var(--cream)'">
       <span style="font-family:var(--fm);font-size:10px;color:var(--terra)">Ep.${e.order} · ${san(e.month)} ${e.year}</span><br>${san(e.title)}</div>`).join('')}`:''}
     <div style="margin-top:10px;display:flex;gap:6px">
@@ -1670,6 +1852,114 @@ function openMapPanel(id){
 function closeMapPanel(){
   document.getElementById('map-panel')?.classList.remove('on');
 }
+
+
+// ══════════════════════════════════════════════════
+// FORM — Perfil of interviewed (Supabase)
+// ══════════════════════════════════════════════════
+const PF_BUCKET = 'entrevistados-fotos';
+
+function pfHandlePhoto(input) {
+  const zone = document.getElementById('pf-photoZone');
+  const name = document.getElementById('pf-photoName');
+  if (input.files && input.files[0]) {
+    zone.style.borderStyle = 'solid';
+    zone.style.borderColor = 'var(--sage)';
+    zone.style.background = 'var(--sage-l)';
+    name.textContent = input.files[0].name;
+  }
+}
+
+document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const btn    = document.getElementById('pf-submitBtn');
+  const spinner= document.getElementById('pf-spinner');
+  const btnTxt = document.getElementById('pf-btnText');
+  const errMsg = document.getElementById('pf-errorMsg');
+
+  // Validação
+  const required = ['pf-firstName','pf-lastName','pf-email-form','pf-cargo','pf-departamento','pf-instituicao','pf-pais','pf-bio-form'];
+  for (const id of required) {
+    if (!document.getElementById(id)?.value.trim()) {
+      document.getElementById(id)?.focus();
+      errMsg.textContent = 'Please fill in all required fields.';
+      errMsg.style.display = 'block';
+      return;
+    }
+  }
+  if (!document.getElementById('pf-c1').checked || !document.getElementById('pf-c2').checked) {
+    errMsg.textContent = 'Please accept the required consent items.';
+    errMsg.style.display = 'block';
+    return;
+  }
+  const photoFile = document.getElementById('pf-photoFile');
+  if (!photoFile?.files[0]) {
+    errMsg.textContent = 'Please upload a profile photo.';
+    errMsg.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btnTxt.textContent = 'Uploading…';
+  spinner.style.display = 'block';
+  errMsg.style.display = 'none';
+
+  try {
+    // Upload foto
+    const file = photoFile.files[0];
+    const ext  = file.name.split('.').pop();
+    const slug = document.getElementById('pf-lastName').value.toLowerCase().replace(/\s+/g,'-');
+    const path = slug + '-' + Date.now() + '.' + ext;
+
+    // Upload via Storage REST API (fetch nativo — sem supabase-js)
+    const uploadRes = await fetch(
+      'https://ngeogbbsvohgscyeqbvr.supabase.co/storage/v1/object/' + PF_BUCKET + '/' + path,
+      { method:'POST', headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZW9nYmJzdm9oZ3NjeWVxYnZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDk1NTcsImV4cCI6MjA5MDYyNTU1N30._ajMoa521ijfoFcSlLxH6htzGGZRRS32mzoLIWg7V5k','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZW9nYmJzdm9oZ3NjeWVxYnZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNDk1NTcsImV4cCI6MjA5MDYyNTU1N30._ajMoa521ijfoFcSlLxH6htzGGZRRS32mzoLIWg7V5k','x-upsert':'false','Cache-Control':'3600'}, body: file }
+    );
+    if (!uploadRes.ok) { const ej = await uploadRes.json().catch(()=>({})); throw new Error(ej.message||uploadRes.statusText); }
+    const foto_url = 'https://ngeogbbsvohgscyeqbvr.supabase.co/storage/v1/object/public/' + PF_BUCKET + '/' + path;
+
+    // Insert
+    const { error: insertError } = await sbFetch('entrevistados', {
+      method: 'POST',
+      prefer: 'return=minimal',
+      body: JSON.stringify([{
+      primeiro_nome:      document.getElementById('pf-firstName').value.trim(),
+      ultimo_nome:        document.getElementById('pf-lastName').value.trim(),
+      pronomes:           document.getElementById('pf-pronomes').value.trim() || null,
+      email:              document.getElementById('pf-email-form').value.trim(),
+      cargo:              document.getElementById('pf-cargo').value.trim(),
+      departamento:       document.getElementById('pf-departamento').value.trim(),
+      instituicao:        document.getElementById('pf-instituicao').value.trim(),
+      pais:               document.getElementById('pf-pais').value.trim(),
+      website:            document.getElementById('pf-website').value.trim() || null,
+      bio:                document.getElementById('pf-bio-form').value.trim(),
+      areas_pesquisa:     document.getElementById('pf-areas').value.trim() || null,
+      publicacoes:        document.getElementById('pf-publicacoes').value.trim() || null,
+      foto_url,
+      credito_foto:       document.getElementById('pf-creditoFoto').value.trim() || null,
+      consent_publicacao: document.getElementById('pf-c1').checked,
+      consent_transcript: document.getElementById('pf-c2').checked,
+      consent_redes:      document.getElementById('pf-c3').checked,
+      observacoes:        document.getElementById('pf-observacoes').value.trim() || null,
+    }])}); 
+
+    if (insertError) throw insertError;
+
+    document.getElementById('profileForm').style.display = 'none';
+    document.getElementById('pf-successPage').style.display = 'block';
+    toast('Perfil enviado com sucesso!', 's');
+
+  } catch (err) {
+    console.error('[FORM]', err);
+    errMsg.textContent = 'Something went wrong: ' + err.message;
+    errMsg.style.display = 'block';
+    btn.disabled = false;
+    btnTxt.textContent = 'Submit information';
+    spinner.style.display = 'none';
+  }
+});
 
 // ══════════════════════════════════════════════════
 // INIT
